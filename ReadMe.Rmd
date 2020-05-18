@@ -1,0 +1,78 @@
+---
+output: github_document
+pagetitle: README
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+<!--# isoplants <img src="man/figures/logo.png" align="right" height="200" width="200"/> -->
+
+
+## Modelling stable isotope composition of plant tissue
+
+####*Note*
+This package is under development and may yet produce unstable results
+
+## Description
+
+{isoplants} is a lightweight R package to model the isotopic ratios in in plant tissue and analyze the sensitivity to changes in environmental conditions. It currently focuses on stable Oxygen isotopes but will integrate Carbon and possibly Hydrogen isotopes in future  releases.
+It uses the R package [tealeaves](https://CRAN.R-project.org/package=tealeaves) to integrate the calculation of leaf temperatures.
+
+## Get isoplants
+
+From GitHub
+
+```r
+install.packages("devtools")
+devtools::install_github("dabasler/isoplants")
+```
+
+And load isoplants
+
+```r
+library("isoplants")
+```
+
+## Vignette
+```{r child = 'vignettes/isoplants-introduction.Rmd'}
+```
+
+['vignettes/isoplants-introduction.Rmd')](../doc/isoplants-sensitivity.html)
+\href{../doc/isoplants-sensitivity.html}{\code{vignette("isoplants-sensitivity", package = "isoplants")}}
+
+
+\href{../doc/isoplants-sensitivity.html}{\code{vignette("isoplants-sensitivity", package = "isoplants")}}
+
+## Contributors
+
+* [David Basler](https://github.com/dabasler)
+
+<!--
+## Comments and contributions
+
+#I welcome comments, criticisms, and especially contributions!
+#GitHub issues are the preferred way to report bugs, ask questions, or request new features.
+#You can submit issues here:
+#https://github.com/dabasler/isoplants/issues
+-->
+
+## Meta
+<!--
+# Please [report any issues or bugs](https://github.com/dabasler/isoplants/issues).
+-->
+
+* License: MIT
+
+<!-- * Get citation information for `isoplants` in R doing `citation(package = 'isoplants')` 
+* Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
+-->

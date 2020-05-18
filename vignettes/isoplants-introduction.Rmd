@@ -1,0 +1,114 @@
+---
+title: "Introduction to the {isoplants} package"
+author: "David Basler"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{isoplants: Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  eval = TRUE
+)
+```
+
+The {isoplants} package allows to calculate isotopic composition of plant tissue in respone to environmental factors. 
+This vignette shows a basic example to usse the {isoplants} package:
+
+- run a minimum worked example using default parameters
+- replace default parameters
+- include uncertainty estimates for specific parameters
+
+## Minimum worked example
+
+You can use the models with the default parameter settings using the `get_default_parameters()` function and `plant18O_model()`. Basic information about the inputparmeters can be displayed by calling `get_parameter_definition()`.
+
+
+```{r, basic}
+
+library(magrittr)
+library(isoplants)
+
+# Get all default parameters (the default parameters will use include parameters for the peclet model)
+df_parameter<-get_default_parameters()
+result<-plant18O_model(df_parameter)
+result %>% knitr::kable()
+
+
+# The output can also be limited to a specific variable
+plant18O_model(df_parameter,output = 'd18O_c')
+```
+
+## Parameter Checking
+
+The package includes the `check_parameters()` function which provides 
+(1) a list of selected model options, 
+(2) basic checking of provided parameters and 
+(3), a list of any errors found.
+
+
+```{r, check}
+
+check<-check_parameters(df_parameter) # Run a check on the specified parameters
+
+check$model_options %>% knitr::kable()
+check$model_parameters %>% knitr::kable()
+check$errors %>% knitr::kable() # should be empty
+
+```
+
+## Replace parameters
+
+The input parameter data.frame object can have multiple rows. Here we calculate d18O_lt for different values of RH.
+
+```{r, cpar}
+# Run model on default parameters, manipulating one parameter (RH)
+RH<-seq(10,90,10)
+# PArameters can be set using the set_parameter function
+df_parameter<-get_default_parameters()
+df_parameter<-set_parameters(data.frame(RH),df_parameter)
+# OR by assigning them directly to a parametertable with the appropriate number of rows
+df_parameter<-get_default_parameters(n=length(RH), mode='peclet')
+df_parameter$RH<-RH
+#run model
+result<-plant18O_model(df_parameter)
+plot(df_parameter$RH,result$d18O_bulk,xlab='RH',ylab='d18O_lt',pch=19,las=1)
+```
+
+## Parameter uncertainty
+
+The included fuction `get_randomized_parameters()` samples n parametersets from parameter specific distributions in order to estimate the effect of uncertainty of input parameters. `set_parameters()` combines fixed parameters with a set of varying parameters.
+
+```{r, unc}
+# Run model on default parameters with uncertainty on multiple parameter
+
+# Get default parameters
+df_parameter<-get_default_parameters(mode='peclet')
+# Defines ranges and distributions for parameters (see ?get_randomized_parameters for detailed information on the imput format and further options)
+rnd_par <- data.frame(name= c('RH',   'd18O_sw', 'px'   ),
+                      pdist=c('norm', 'norm'   , 'unif' ),
+                      pdm=  c(70,      -10     , 0.4    ),
+                      pdv=  c(20,       5      , 0.2    ),
+                      stringsAsFactors = FALSE
+                      )
+
+n<-1000 # Number of samples
+
+df_parameter <- set_parameters(get_randomized_parameters(n,rnd_par) , df_parameter)
+result<-plant18O_model(df_parameter)
+
+```
+```{r, fig.show='hold'}
+hist(result$d18O_pt,main = 'd18O_pt',xlab='d18O plant tissue')
+boxplot(result$d18O_pt,main = 'd18O_pt')
+
+```
+
+

@@ -1,0 +1,28 @@
+Package: isoplants
+Title: Modelling stable oxygen isotope composition of plant tissue
+Version: 0.0.0.0001
+Authors@R: 
+    person(given = "David",
+           family = "Basler",
+           role = c("aut", "cre"),
+           email = "david.j.basler@gmail.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Depends: R (>= 3.5.0)
+Imports: sensitivity (>= 1.18.0),
+         magrittr (>= 1.5.0),
+         tealeaves (>= 1.0.0),
+         stats (>= 3.5.0),
+         graphics(>= 3.5.0),
+         boot(>= 1.3-0),
+         ggplot2 (>= 3.1.0)
+Suggests: 
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
