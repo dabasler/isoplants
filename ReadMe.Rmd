@@ -47,11 +47,10 @@ library("isoplants")
 ```{r child = 'vignettes/isoplants-introduction.Rmd'}
 ```
 
-['vignettes/isoplants-introduction.Rmd')](../doc/isoplants-sensitivity.html)
-\href{../doc/isoplants-sensitivity.html}{\code{vignette("isoplants-sensitivity", package = "isoplants")}}
+## Vignette Sensititivy
+```{r child = 'vignettes/isoplants-sensitivity.Rmd'}
+```
 
-
-\href{../doc/isoplants-sensitivity.html}{\code{vignette("isoplants-sensitivity", package = "isoplants")}}
 
 ## Contributors
 

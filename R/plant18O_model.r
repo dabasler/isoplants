@@ -1,5 +1,6 @@
+
 # Péclet-modified Craig Gordon model
-# This is a general implementation of the Peclet-modified Craig Gordon model, offering a few options
+# This is a general implementation of the Peclet-modified Craig Gordon model, offering a bunch of different options
 
 #' (Péclet mofified) Craig-Gordon based model for plant tissue 18O enrichment
 #' Calculates d18O of leaf water, cellulose and bulk tissue with different models based on the parameter provided
@@ -79,7 +80,7 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   if ("P" %in% parameter_names) {
     P <- par["P"]
   } else if ("elevation" %in% parameter_names) {
-    P <- get_pressure_at_elevation(elevation)
+    P <- get_pressure_at_elevation(par["elevation"])
     if (verbose) print("Calculating atmopheric pressure based on elevation")
   } else {
     stop("could not calculate atmopheric pressure: provide either P or elevation")
@@ -101,8 +102,6 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
     if (verbose) print ("assuming equilibrium water vapour. D18O_wv = -eeq (tair)")
     D18O_wv <- -get_equilibrium_fractionation(Tair)
   }
-
-
 
   # Tleaf
   if ("Tleaf" %in% parameter_names) {
@@ -137,8 +136,6 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   } else {
     stop("Missing parameter rb")
   }
-
-
 
   ## Isotope Fractination
   eq <- get_equilibrium_fractionation(Tleaf)
@@ -607,7 +604,6 @@ get_pathlength <- function(E) { #[mol m-2 s-1]
 ## ----
 
 
-#'
 #' Two pool mixing
 #' two pool model phi is the proportion of unenriched water
 #' @param phi mixing coefficient
@@ -630,6 +626,7 @@ apply_twopool_mixing <- function(phi, D18O_e) { #[], [permil]
 #' @param parranges  data.frame (name,pdist,pdm,pdv)
 #'
 #' @return data.frame containing parameters sampled from the defined distrubution
+#' @importFrom  stats rnorm runif
 #' @export
 #' @examples
 #' \dontrun{

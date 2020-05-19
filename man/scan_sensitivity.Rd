@@ -5,16 +5,16 @@
 \title{Sensitivity analysis by factor
 Calculates sobol indices along scanning one parameter}
 \usage{
-scan_sensitivity(X1, X2, fixedPar, ts, scanpar, outpar = "D18O_lw")
+scan_sensitivity(X1, X2, fixpar, scanvalues, scanpar, outpar = "D18O_lw")
 }
 \arguments{
 \item{X1}{data.frame of randomized model parameters for the siensitvity analysis}
 
 \item{X2}{data.frame of randomized model parameters for the siensitvity analysis}
 
-\item{fixedPar}{one row data.frame with requiered parameters not to be varied in the sensitivity analysis}
+\item{fixpar}{one row data.frame with requiered parameters not to be varied in the sensitivity analysis}
 
-\item{ts}{vector of values to be calculated for the gradient factor}
+\item{scanvalues}{vector of values to be calculated for the gradient factor}
 
 \item{scanpar}{character. Name of the Gradient factor}
 

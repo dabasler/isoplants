@@ -41,7 +41,6 @@ df_parameter<-get_default_parameters()
 result<-plant18O_model(df_parameter)
 result %>% knitr::kable()
 
-
 # The output can also be limited to a specific variable
 plant18O_model(df_parameter,output = 'd18O_c')
 ```
@@ -50,14 +49,13 @@ plant18O_model(df_parameter,output = 'd18O_c')
 
 The package includes the `check_parameters()` function which provides 
 (1) a list of selected model options, 
-(2) basic checking of provided parameters and 
-(3), a list of any errors found.
+(2) basic checking of provided parameters and, 
+(3) a list of any errors found.
 
 
 ```{r, check}
 
 check<-check_parameters(df_parameter) # Run a check on the specified parameters
-
 check$model_options %>% knitr::kable()
 check$model_parameters %>% knitr::kable()
 check$errors %>% knitr::kable() # should be empty
@@ -79,7 +77,7 @@ df_parameter<-get_default_parameters(n=length(RH), mode='peclet')
 df_parameter$RH<-RH
 #run model
 result<-plant18O_model(df_parameter)
-plot(df_parameter$RH,result$d18O_bulk,xlab='RH',ylab='d18O_lt',pch=19,las=1)
+plot(df_parameter$RH,result$d18O_pt,xlab='RH',ylab='d18O_lt',pch=19,las=1)
 ```
 
 ## Parameter uncertainty

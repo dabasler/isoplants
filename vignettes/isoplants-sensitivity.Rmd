@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
+```{r sensitivitysetup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -121,10 +121,10 @@ ss<-scan_sensitivity(X1,X2,fixpar,ts,scanpar,outpar="D18O_lw")
 ```
 
 ```{r,fig.width=6,fig.height=4}
-plot_sensitivity(ss$ds,scanpar,'normalized first-order indices','D18O_lw',parcol = 1)
+plot_sensitivity(ss$ds,scanpar,'normalized first-order indices','D18O_lw',parcol = 1,legend = TRUE)
 
 
 ```
 ```{r,fig.width=6,fig.height=4}
-plot_sensitivity(ss$dt,scanpar,'normalized total indices','',parcol = 1,legend = 2)
+plot_sensitivity(ss$dt,scanpar,'normalized total indices','',parcol = 1,legend = TRUE)
 ```
