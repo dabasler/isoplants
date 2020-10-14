@@ -104,9 +104,75 @@ result<-plant18O_model(df_parameter)
 
 ```
 ```{r, fig.show='hold'}
-hist(result$d18O_pt,main = 'd18O_pt',xlab='d18O plant tissue')
-boxplot(result$d18O_pt,main = 'd18O_pt')
+hist(result$d18O_pt,main = 'd18O_pt',xlab='d18O plant tissue',las=1)
+boxplot(result$d18O_pt,main = 'd18O_pt',las=1)
 
 ```
 
 
+## Optimize a set of parameters
+
+Quite often, a set of parameters need to be fitted to some training data in order to produce a operational model.{Isoplants} allows for very simple parameter optimization when measured data is available.
+
+--- EXAMPLE WILL BE ADDED SHORTLY ---
+
+
+## Leaf temperture model
+
+The `isoplants` package is designed to work with the leaf temperature modelling package `tealeaves` (Muir 2019) to estimate leaf temperature in various environmental conditions or integrate the feedback effect of stomatal conductance on leaf temperture into the isoplants model.
+
+
+```{r, ltemp}
+
+# Get a isoplants parameterset, including default values for radiation windspeed and leaf size
+df_parameter<-get_default_parameters(tealeaves = TRUE) 
+
+
+#set a range of values for stomatal conductance
+df_parameter<-set_parameters(data.frame(gs=seq(0.04,0.5,0.01)),df_parameter) 
+#update the  parameter set with Tleaf and rb as estimated from the tealeaves model
+df_parameter<-calculate_Tleaf(df_parameter) 
+# run the 18O isotope model
+result_with_Tleaf<-plant18O_model(df_parameter)
+
+# Run again setting Tleaf=Tair to show the effect of integrating Tleaf
+df_parameter_without_Tleaf<-df_parameter
+df_parameter_without_Tleaf$Tleaf<-df_parameter_without_Tleaf$Tair
+result_without_Tleaf<-plant18O_model(df_parameter_without_Tleaf)
+
+
+```
+```{r, fig.show='hold'}
+
+plot(df_parameter$Tleaf~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='Leaf tempertaure (°C)',type='l')
+text(0.5,19.7,"Air temperture 20°C",adj=c(1,1),cex=0.8)
+
+plot(result_with_Tleaf$d18O_pt~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='d18O plant tissue (‰)',type='l',lwd=2,col="#00AFBB")
+lines(result_without_Tleaf$d18O_pt~df_parameter_without_Tleaf$gs,lty=2,lwd=2,col="#FC4E07")
+legend('bottomleft',lty=c(1,2),lwd=2,c('incl.leaf temperture effect','excl. leaf temperture effect'),col=c(col="#00AFBB","#FC4E07"),bty='n',cex=0.8)
+
+```
+
+
+## Piso.AI API interaction
+
+One of the most important parameter for the isotopic compostition of plant tissue is the isotopic composition of source water (d18O_sw). Often this is approximated by using site-specific data on the isotopic composition of precipitation. THe {isoplants} packate interacts with the Piso.AI API to these data. [Piso.AI](https://isotope.bot.unibas.ch/PisoAI/) is tool for predicting monthly timeseries of oxygen and hydrogen isotope values of precipitation that uses a machine learning model trained on geographic and climate data. THe Piso.AI v1.0 dataset covers most of Europe and covers the timespan from 1950-01-01 to 2019-12-31. 
+Below is an example of the basic data requests from the Piso.AI api using the tools provided in {isoplants}:
+
+```{r, Piso.AI, eval=FALSE}
+# Simple request for Piso.AI data of two locations and the full time span of Piso.AI
+location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0))
+pisoai_data <- get_pisoai_data(location)
+
+# Request for Piso.AI data of two locations and specific timespan
+pisoai_data <- get_pisoai_data(location, years=c(1990,2000),months=c(4,6))
+
+# Request for Piso.AI data of two locations individual years
+location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0),years=c(1979,2010),stringsAsFactors = FALSE)
+pisoai_data <- get_pisoai_data(location)
+
+# Similar request, additionally storing data locally
+pisoai_data <- get_pisoai_data(location,storelocal='~/PisoAI_data')
+# read back local data
+pisoai_data <- pisoai_readlocal('~/PisoAI_data')
+```

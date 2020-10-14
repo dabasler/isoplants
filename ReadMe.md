@@ -1,6 +1,8 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<!--# isoplants <img src="man/figures/logo.png" align="right" height="200" width="200"/> -->
+isoplants <img src="man/figures/isoplants_logo.png" align="right" height="200" width="200"/>
+============================================================================================
+
 Modelling stable isotope composition of plant tissue
 ----------------------------------------------------
 
@@ -54,12 +56,11 @@ result<-plant18O_model(df_parameter)
 result %>% knitr::kable()
 ```
 
-|        ea|        ei|  ea\_ei|        vpd|        eq|        ek|   gs|          E|    D|         pn|   D18O\_e|    d18O\_e|  D18O\_lw|  d18O\_lw|   D18O\_c|   d18O\_c|  d18O\_pt|  d18O\_pt|
+|        ea|        ei|  ea\_ei|        vpd|        eq|        ek|   gs|          E|    D|         pn|   D18O\_e|    d18O\_e|  D18O\_lw|  d18O\_lw|   D18O\_c|   d18O\_c|  D18O\_pt|  d18O\_pt|
 |---------:|---------:|-------:|----------:|---------:|---------:|----:|----------:|----:|----------:|---------:|----------:|---------:|---------:|---------:|---------:|---------:|---------:|
-|  1.642629|  2.346613|     0.7|  0.7039839|  9.806829|  25.42857|  0.4|  0.0019851|    0|  0.5429544|  10.57811|  -9.633452|  8.162601|  -11.8374|  31.89756|  11.25961|  11.25961|  11.25961|
+|  1.642629|  2.346613|     0.7|  0.7039839|  9.806829|  25.42857|  0.4|  0.0019851|    0|  0.5429544|  10.57811|  -9.633452|  8.162601|  -11.8374|  31.89756|  11.25961|  31.89756|  11.25961|
 
 ``` r
-
 
 # The output can also be limited to a specific variable
 plant18O_model(df_parameter,output = 'd18O_c')
@@ -74,7 +75,6 @@ The package includes the `check_parameters()` function which provides (1) a list
 ``` r
 
 check<-check_parameters(df_parameter) # Run a check on the specified parameters
-
 check$model_options %>% knitr::kable()
 ```
 
@@ -92,9 +92,12 @@ check$model_options %>% knitr::kable()
 <td align="left">Provided 1 set(s) for 12 parameters: Tair, RH, P, d18O_sw, Tleaf, rb, gs, Lm, px, pex, ecp, D18O_wv</td>
 </tr>
 <tr class="even">
-<td align="left">Mixing: peclet mixing</td>
+<td align="left">Leaf temperture: using provided leaf temperature</td>
 </tr>
 <tr class="odd">
+<td align="left">Mixing: peclet mixing</td>
+</tr>
+<tr class="even">
 <td align="left">Other: D18O of water vapor over soil water assumed to be in equilibrium</td>
 </tr>
 </tbody>
@@ -177,11 +180,77 @@ result<-plant18O_model(df_parameter)
 ```
 
 ``` r
-hist(result$d18O_pt,main = 'd18O_pt',xlab='d18O plant tissue')
-boxplot(result$d18O_pt,main = 'd18O_pt')
+hist(result$d18O_pt,main = 'd18O_pt',xlab='d18O plant tissue',las=1)
+boxplot(result$d18O_pt,main = 'd18O_pt',las=1)
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" />
+
+Optimize a set of parameters
+----------------------------
+
+Quite often, a set of parameters need to be fitted to some training data in order to produce a operational model.{Isoplants} allows for very simple parameter optimization when measured data is available.
+
+--- EXAMPLE WILL BE ADDED SHORTLY ---
+
+Leaf temperture model
+---------------------
+
+The `isoplants` package is designed to work with the leaf temperature modelling package `tealeaves` (Muir 2019) to estimate leaf temperature in various environmental conditions or integrate the feedback effect of stomatal conductance on leaf temperture into the isoplants model.
+
+``` r
+
+# Get a isoplants parameterset, including default values for radiation windspeed and leaf size
+df_parameter<-get_default_parameters(tealeaves = TRUE) 
+
+
+#set a range of values for stomatal conductance
+df_parameter<-set_parameters(data.frame(gs=seq(0.04,0.5,0.01)),df_parameter) 
+#update the  parameter set with Tleaf and rb as estimated from the tealeaves model
+df_parameter<-calculate_Tleaf(df_parameter) 
+# run the 18O isotope model
+result_with_Tleaf<-plant18O_model(df_parameter)
+
+# Run again setting Tleaf=Tair to show the effect of integrating Tleaf
+df_parameter_without_Tleaf<-df_parameter
+df_parameter_without_Tleaf$Tleaf<-df_parameter_without_Tleaf$Tair
+result_without_Tleaf<-plant18O_model(df_parameter_without_Tleaf)
+```
+
+``` r
+
+plot(df_parameter$Tleaf~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='Leaf tempertaure (°C)',type='l')
+text(0.5,19.7,"Air temperture 20°C",adj=c(1,1),cex=0.8)
+
+plot(result_with_Tleaf$d18O_pt~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='d18O plant tissue (‰)',type='l',lwd=2,col="#00AFBB")
+lines(result_without_Tleaf$d18O_pt~df_parameter_without_Tleaf$gs,lty=2,lwd=2,col="#FC4E07")
+legend('bottomleft',lty=c(1,2),lwd=2,c('incl.leaf temperture effect','excl. leaf temperture effect'),col=c(col="#00AFBB","#FC4E07"),bty='n',cex=0.8)
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-5-2.png" width="100%" />
+
+Piso.AI API interaction
+-----------------------
+
+One of the most important parameter for the isotopic compostition of plant tissue is the isotopic composition of source water (d18O\_sw). Often this is approximated by using site-specific data on the isotopic composition of precipitation. THe {isoplants} packate interacts with the Piso.AI API to these data. [Piso.AI](https://isotope.bot.unibas.ch/PisoAI/) is tool for predicting monthly timeseries of oxygen and hydrogen isotope values of precipitation that uses a machine learning model trained on geographic and climate data. THe Piso.AI v1.0 dataset covers most of Europe and covers the timespan from 1950-01-01 to 2019-12-31. Below is an example of the basic data requests from the Piso.AI api using the tools provided in {isoplants}:
+
+``` r
+# Simple request for Piso.AI data of two locations and the full time span of Piso.AI
+location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0))
+pisoai_data <- get_pisoai_data(location)
+
+# Request for Piso.AI data of two locations and specific timespan
+pisoai_data <- get_pisoai_data(location, years=c(1990,2000),months=c(4,6))
+
+# Request for Piso.AI data of two locations individual years
+location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0),years=c(1979,2010),stringsAsFactors = FALSE)
+pisoai_data <- get_pisoai_data(location)
+
+# Similar request, additionally storing data locally
+pisoai_data <- get_pisoai_data(location,storelocal='~/PisoAI_data')
+# read back local data
+pisoai_data <- pisoai_readlocal('~/PisoAI_data')
+```
 
 Vignette Sensititivy
 --------------------
@@ -216,7 +285,7 @@ for (i in 1:length(rhs)){
 legend('bottomleft',as.character(rhs),col=col,lty=1,title = 'RH (%)',bty='n')
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 Sobol incices
 -------------
@@ -250,7 +319,7 @@ x <- sobol2007(model =plant18O_model, X1 = X1, X2 = X2, nboot = 1000, output = "
 ggplot(x)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ### Fixing some parameters
 
@@ -273,7 +342,7 @@ x <- sobol2007(model =plant18O_model, X1 = X1, X2 = X2, nboot = 1000, output = "
 ggplot(x)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ### Parmeter gradients
 
@@ -306,16 +375,16 @@ ss<-scan_sensitivity(X1,X2,fixpar,ts,scanpar,outpar="D18O_lw")
 ```
 
 ``` r
-plot_sensitivity(ss$ds,scanpar,'normalized first-order indices','D18O_lw',parcol = 1)
-```
-
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
-
-``` r
-plot_sensitivity(ss$dt,scanpar,'normalized total indices','',parcol = 1,legend = 2)
+plot_sensitivity(ss$ds,scanpar,'normalized first-order indices','D18O_lw',parcol = 1,legend = TRUE)
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+
+``` r
+plot_sensitivity(ss$dt,scanpar,'normalized total indices','',parcol = 1,legend = TRUE)
+```
+
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 Contributors
 ------------

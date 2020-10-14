@@ -39,10 +39,15 @@
 #' \code{phi} \tab Two pool model mixing parameter \tab use Two pool-model\cr
 #' \code{px} \tab conversion parameter for cellulose\cr
 #' \code{pex} \tab conversion parameter for cellulose\cr
-#' \code{ewc} \tab conversion parameter for cellulose\cr
+#' \code{ewc} \tab conversion parameter for cellulose (assumed to be 27 permil)\cr
 #' \code{ecp} \tab offset from cellulose to bulk leaf material\cr
+#' \cr
+#' \bold{additional leaf temperature model \code{tealeaves} parameter}\cr
+#' \code{swrad} \tab shortwave radiation \tab (Wm^-2)\cr
+#' \code{wind} \tab windspeed  \tab (ms^-1)\cr
+#' \code{ls} \tab leaf size  \tab (m)\cr
 #'}
-
+#'
 #' @export
 #' @examples
 #'
@@ -53,7 +58,7 @@
 
 plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   # Define output names
-  header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c", "d18O_c","d18O_pt","d18O_pt")
+  header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c", "d18O_c","D18O_pt","d18O_pt")
   if (!is.null(addpar)) par <- set_parameters(addpar,par) # Allows to have some fixed parameters (used for optimization, sensitivity analisys,...)
   #Parse parameter
   if (output=='?') return (header) # Get header
@@ -103,14 +108,12 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
     D18O_wv <- -get_equilibrium_fractionation(Tair)
   }
 
-  # Tleaf
-  if ("Tleaf" %in% parameter_names) {
+  if ("Tleaf" %in% parameter_names) { #Use custom parametername for tealeaves calculated leaf temperature?
     Tleaf <- par["Tleaf"]
   } else if ("DTleaf" %in% parameter_names) {
     Tleaf <- Tair + par["DTleaf"]
   } else {
     stop("could not calculate Leaf temperature: provide either Tleaf or DTleaf")
-    # ADD TEALEAVES FUNCTIONALITY HERE
   }
 
   # ei
@@ -118,25 +121,26 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
 
   # vpd
   vpd <- ei - ea
+
   ## PLANT   ########################
+
   # Stomatal conductance gs
   if ("gs" %in% parameter_names) {
     gs <- par["gs"]
   } else if ("gsref" %in% parameter_names) {
     gsref <- par["gsref"]
     gs <- get_stomatal_conductance(gsref, vpd)
-    if (verbose) print("Calculating stomatal conductance from gsref according to [REFERENCE]")
+    if (verbose) print("Calculating stomatal conductance from gsref according to [Oren 1999]")
   } else {
     stop("could not calculate stomatal conductance (provide gs or gsref)")
   }
 
   # boundary layer resistance rb
   if ("rb" %in% parameter_names) {
-    rb <- par["rb"]
-  } else {
-    stop("Missing parameter rb")
-  }
-
+      rb <- par["rb"]
+    } else {
+      stop("Missing parameter rb")
+    }
   ## Isotope Fractination
   eq <- get_equilibrium_fractionation(Tleaf)
   D <- get_H2O_diffusivity(Tleaf)
@@ -199,18 +203,18 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
 
   # Bulk Materials
   if (!"ecp" %in% parameter_names) {
-    d18O_pt <- valueNA
+    D18O_pt <- valueNA
     d18O_pt <- valueNA
     if (verbose) message("Parameter ecp missing. Cannot calculate d18O bulk")
   } else {
     ecp <- par["ecp"]
-    d18O_pt <- D18O_c + ecp
-    d18O_pt <- D2delta(d18O_pt,d18O_sw)
+    D18O_pt <- D18O_c + ecp
+    d18O_pt <- D2delta(D18O_pt,d18O_sw)
   }
 
   # Prepare Output
-  header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c","d18O_c","d18O_pt","d18O_pt")
-  values <- data.frame(ea, ei, ea / ei, vpd, eq, ek, gs, E, D, pn, D18O_e, d18O_e, D18O_lw, d18O_lw, D18O_c, d18O_c,d18O_pt,d18O_pt)
+  header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c","d18O_c","D18O_pt","d18O_pt")
+  values <- data.frame(ea, ei, ea / ei, vpd, eq, ek, gs, E, D, pn, D18O_e, d18O_e, D18O_lw, d18O_lw, D18O_c, d18O_c,D18O_pt,d18O_pt)
   names(values) <- header
   if (output == "all") {
     return(values)
@@ -243,6 +247,7 @@ get_parameter_definition<-function(){
   parameter_definition[ 6,]<-c('environment', 'd18O_sw',   -30,   0,      -20,  5,'[permil]','d18O soil water')
   parameter_definition[ 7,]<-c('environment', 'D18O_wv',   -15,   0,-9.806829,  6,'[permil]','D18O of water vapor over soil water') # Default value calculated
 
+
   # Leaf
   parameter_definition[ 8,]<-c('leaf', 'DTleaf',    -20,  20,        0,  2,'[deg C]','delta leaf temperature')
   parameter_definition[ 9,]<-c('leaf', 'Tleaf',     -30,  50,       20,  2,'[deg C]','absolute Leaf temperature')
@@ -261,6 +266,11 @@ get_parameter_definition<-function(){
   # Bulk leaf material
   parameter_definition[17,]<-c('leaf', 'ecp',     -10,  10,        0, 12,'[permil]','offset from cellulose to bulk leaf material')
 
+  # Additional Parameters for use with tealeaves leaf temperture model
+  parameter_definition[ 18,]<-c('leafTmodel', 'swrad',   0,   2500,1000,  2,'[Wm^-2]','shortwave (solar) radiation')
+  parameter_definition[ 19,]<-c('leafTmodel', 'wind',    0,   20,     2,  2,'[m/s]','windspeed')
+  parameter_definition[ 20,]<-c('leafTmodel', 'leafsize',    0.001,   0.3, 0.1,  2,'[m]','leaf size (used for leaf temperature model)')
+
   # Format
   parameter_definition[ , c(3:6)] <- apply(parameter_definition[ ,c(3:6)], 2,function(x) as.numeric(as.character(x)))
 
@@ -270,16 +280,19 @@ get_parameter_definition<-function(){
 #' Get a set of default environment and leaf parameters
 #' @param n number of rows in the retuned data.frame
 #' @param mode 'peclet' (default) or 'twopool', specify the mixing model used
+#' @param tealeaves add default parameters for leaf temperature calculation with the tealeaves model
 #' @return a dataframe containing vaild parameter names,  ranges, descriptors and default values
 #' @export
 #'
-get_default_parameters<-function(n=1,mode='peclet'){
+get_default_parameters<-function(n=1,mode='peclet',tealeaves=FALSE){
   mix<- 13
   if (mode=='twopool') mix<- 14
   pd <- get_parameter_definition()
-  dp <- data.frame(matrix(rep(pd$default[c(1,2,4,6,9,10,11,mix,15,16,17)],n),nrow=n,byrow=TRUE))
-  names(dp)<-pd$name[c(1,2,4,6,9,10,11,mix,15,16,17)]
-  attr(dp,'units')<-pd$unit[c(1,2,4,6,9,10,11,mix,15,16,17)]
+  lt<-9
+  if (tealeaves) lt<-c(18,19,20)
+  dp <- data.frame(matrix(rep(pd$default[c(1,2,4,6,lt,10,11,mix,15,16,17)],n),nrow=n,byrow=TRUE))
+  names(dp)<-pd$name[c(1,2,4,6,lt,10,11,mix,15,16,17)]
+  attr(dp,'units')<-pd$unit[c(1,2,4,6,lt,10,11,mix,15,16,17)]
   return (dp)
 }
 
@@ -358,6 +371,15 @@ check_parameters <- function(par,parameter_check=NULL ) {
   parameter_check<-parameter_check[!(is.na(parameter_check$check) & parameter_check$pargroup %in% setpar),]
   parameter_check$check[is.na(parameter_check$check)]<-'missing'
 
+  # pargroup 2 specifies leaf temperature value/model
+  if ((2 %in% setpar)){
+    ltpar<-parameter_check$name[which(parameter_check$pargroup==2)]
+    if (length(ltpar)==1) {
+      if (ltpar == "Tleaf"| ltpar == "Dleaf") tstring<- 'using provided leaf temperature'
+    } else if (length(ltpar)>=3) {if ("swrad" %in% ltpar & "wind" %in% ltpar &  "leafsize" %in% ltpar) tstring<- 'using leaf temperature model (tealeaves)'}
+    else {  tstring<-'leaf temperture assumed to be equal to air temperture\n'}
+  }
+
   # pargroup 9 specifies mixing model
   if ((9 %in% setpar)){
     mixpar<-parameter_check$name[which(parameter_check$pargroup==9)]
@@ -374,6 +396,7 @@ check_parameters <- function(par,parameter_check=NULL ) {
   parameter_check<-parameter_check[,-which(names(parameter_check)=='pargroup')] # this column is for internal use only
   header=c(
     sprintf('Provided %i set(s) for %i parameters:\t %s\n',npc,np,paste(parnames,collapse = ', ')),
+    sprintf('Leaf temperture:\t %s\n',tstring),
     sprintf('Mixing:\t %s\n',mixstring)
     )
     if (wvstring!='') header=c(header,sprintf('Other:\t %s\n',wvstring))
@@ -670,10 +693,59 @@ set_parameters<-function(newvalues,parameter_table){
   if (length(update)>0) parameter_table[,update]<-newvalues[,update]
 
   add<-setdiff(names(newvalues),names(parameter_table))
-  if (length(add)>0) parameter_table<-cbind(parameter_table,newvalues[,add])
+  if (length(add)>0) {
+    parameter_table<-cbind(parameter_table,newvalues[,add])
+    #names(parameter_table)[ (ncol(parameter_table)-length(add)) : ncol(parameter_table) ]<- names(newvalues[,add])
+    }
   return (parameter_table)
 
 }
+
+
+#' get leaf temperature for
+#' Interface with the tealeaves package in order to calculate leaf temperaure and boundary conductance. Sets air temperauture,
+#' barometric pressure, relative humidity and stomatal conductance from isoplants parameters
+#' @param isoplantspar data.frame of randomized model parameters for the siensitvity analysis
+#' @param tealeaves_enviro_par (optional) customized tealeaves parameterset
+#' @param tealeaves_leaf_par   (optional) customized tealeaves parameterset
+#' @param tealeaves_constants  (optional) customized tealeaves parameterset
+#' @return vector containing Tleaf and rb value
+#' @export
+
+tealeaves_getValues<-function(isoplantspar,tealeaves_enviro_par=NULL,tealeaves_leaf_par=NULL, tealeaves_constants=NULL ){
+  #TEALEAVES default parameters.
+  if (is.null(tealeaves_leaf_par))   tealeaves_leaf_par   <- tealeaves::make_leafpar()   # leaf parameters
+  if (is.null(tealeaves_enviro_par)) tealeaves_enviro_par <- tealeaves::make_enviropar() # environmental parameters
+  if (is.null(tealeaves_constants))  tealeaves_constants  <- tealeaves::make_constants() # physical constants
+  tealeaves_enviro_par$T_air<-units::set_units(isoplantspar$Tair+273.15,'K')
+  tealeaves_enviro_par$P<-units::set_units(isoplantspar$P,'kPa')
+  tealeaves_enviro_par$RH<-units::set_units(isoplantspar$RH/100,'1')
+  if ("swrad" %in% names(isoplantspar)) tealeaves_enviro_par$S_sw <- units::set_units(isoplantspar$wind,'W/m^2')
+  if ("wind" %in% names(isoplantspar))  tealeaves_enviro_par$u <- units::set_units(isoplantspar$wind,'m/s')
+  if ("leafsize" %in% names(isoplantspar)) tealeaves_leaf_par$leafsize <- units::set_units(isoplantspar$leafsize,'m')
+  tealeaves_leaf_par$g_sw<-tealeaves::convert_conductance(units::set_units(isoplantspar$gs, "mol/m^2/s"),Temp = tealeaves_enviro_par$T_air, P = tealeaves_enviro_par$P)[[2]]
+  t<-tealeaves::tleaf(tealeaves_leaf_par, tealeaves_enviro_par, tealeaves_constants, quiet = TRUE)[,1]
+  gbw<-tealeaves::convert_conductance(tealeaves:::.get_gbw(t, "lower", c(tealeaves_constants, tealeaves_enviro_par, tealeaves_leaf_par), FALSE), Temp = tealeaves_enviro_par$T_air, P = tealeaves_enviro_par$P)[[3]]
+  return(c(as.numeric(t)-273.15, 1/as.numeric(gbw)))
+}
+
+
+
+#' get leaf temperature for
+#' Interface with the tealeaves package in order to calculate leaf temperaure and boundary conductance.
+#' Wrapper for tealeaves_getValues
+#' @param isoplantspar data.frame of randomized model parameters for the siensitvity analysis
+#' @return input datafrme with updated Tleaf and boundary resistance values
+#' @export
+
+calculate_Tleaf<-function(isoplantspar){
+  #BASIC PARAMTER CHECK
+  tmp<-sapply(1:nrow(isoplantspar),FUN= function(i) tealeaves_getValues(isoplantspar[i,]))
+  isoplantspar$Tleaf<-tmp[1,]
+  isoplantspar$rb<-tmp[2,]
+  return(isoplantspar)
+}
+
 
 
 # # SET PARAMETER UNCERTAINTY

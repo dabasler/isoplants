@@ -51,8 +51,13 @@ Calculates d18O of leaf water, cellulose and bulk tissue with different models b
 \code{phi} \tab Two pool model mixing parameter \tab use Two pool-model\cr
 \code{px} \tab conversion parameter for cellulose\cr
 \code{pex} \tab conversion parameter for cellulose\cr
-\code{ewc} \tab conversion parameter for cellulose\cr
+\code{ewc} \tab conversion parameter for cellulose (assumed to be 27 permil)\cr
 \code{ecp} \tab offset from cellulose to bulk leaf material\cr
+\cr
+\bold{additional leaf temperature model \code{tealeaves} parameter}\cr
+\code{swrad} \tab shortwave radiation \tab (Wm^-2)\cr
+\code{wind} \tab windspeed  \tab (ms^-1)\cr
+\code{ls} \tab leaf size  \tab (m)\cr
 }
 }
 \examples{

@@ -4,12 +4,14 @@
 \alias{get_default_parameters}
 \title{Get a set of default environment and leaf parameters}
 \usage{
-get_default_parameters(n = 1, mode = "peclet")
+get_default_parameters(n = 1, mode = "peclet", tealeaves = FALSE)
 }
 \arguments{
 \item{n}{number of rows in the retuned data.frame}
 
 \item{mode}{'peclet' (default) or 'twopool', specify the mixing model used}
+
+\item{tealeaves}{add default parameters for leaf temperature calculation with the tealeaves model}
 }
 \value{
 a dataframe containing vaild parameter names,  ranges, descriptors and default values
