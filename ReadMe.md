@@ -193,10 +193,10 @@ Quite often, a set of parameters need to be fitted to some training data in orde
 
 --- EXAMPLE WILL BE ADDED SHORTLY ---
 
-Leaf temperture model
----------------------
+Leaf temperature model
+----------------------
 
-The `isoplants` package is designed to work with the leaf temperature modelling package `tealeaves` (Muir 2019) to estimate leaf temperature in various environmental conditions or integrate the feedback effect of stomatal conductance on leaf temperture into the isoplants model.
+The `isoplants` package is designed to work with the leaf temperature modelling package `tealeaves` (Muir 2019) to estimate leaf temperature in various environmental conditions or integrate the feedback effect of stomatal conductance on leaf temperature into the isoplants model.
 
 ``` r
 
@@ -220,11 +220,11 @@ result_without_Tleaf<-plant18O_model(df_parameter_without_Tleaf)
 ``` r
 
 plot(df_parameter$Tleaf~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='Leaf tempertaure (°C)',type='l')
-text(0.5,19.7,"Air temperture 20°C",adj=c(1,1),cex=0.8)
+text(0.5,19.7,"Air temperature 20°C",adj=c(1,1),cex=0.8)
 
 plot(result_with_Tleaf$d18O_pt~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='d18O plant tissue (‰)',type='l',lwd=2,col="#00AFBB")
 lines(result_without_Tleaf$d18O_pt~df_parameter_without_Tleaf$gs,lty=2,lwd=2,col="#FC4E07")
-legend('bottomleft',lty=c(1,2),lwd=2,c('incl.leaf temperture effect','excl. leaf temperture effect'),col=c(col="#00AFBB","#FC4E07"),bty='n',cex=0.8)
+legend('bottomleft',lty=c(1,2),lwd=2,c('incl.leaf temperature effect','excl. leaf temperature effect'),col=c(col="#00AFBB","#FC4E07"),bty='n',cex=0.8)
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-5-2.png" width="100%" />
