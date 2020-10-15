@@ -114,7 +114,43 @@ boxplot(result$d18O_pt,main = 'd18O_pt',las=1)
 
 Quite often, a set of parameters need to be fitted to some training data in order to produce a operational model.{Isoplants} allows for very simple parameter optimization when measured data is available.
 
---- EXAMPLE WILL BE ADDED SHORTLY ---
+```{r, pfit}
+
+# prepare dataset with some randomized sample data
+n<-40
+observed_data <- get_default_parameters(n)
+observed_data$Tair <- rnorm(n,20,4)
+observed_data$RH   <- rnorm(n,70,10)
+observed_data$Lm   <- 0.06  # The fitting procedure should produce something close to this value
+observed_data$px   <- 0.5   # The fitting procedure should produce something close to this value
+# create some 'measured' vaules are added to the data.frame as 'd18O_cellulose'
+# (ensure not to use a parameter name)
+noise<-(runif(n)-0.5)/10
+observed_data$d18O_cellulose <- plant18O_model(observed_data,output='d18O_c') + noise
+# Always ensure that there are no NA values in the observed values
+observed_data<-observed_data[!is.na(observed_data$d18O_cellulose),]
+
+
+# Fit the parameters "Lm" and "px" (this might take a while)
+parfit<-fit_plant18O(c("Lm","px"), observed_data, obsvalue = "d18O_cellulose", modvalue ="d18O_c")
+
+print (parfit$par)
+# Run model on best parameters
+run_par<-get_run_parameters(observed_data,parfit$par)
+modelout<-plant18O_model(run_par)
+result<-cbind(observed_data,modelout)
+
+```
+```{r, fig.show='hold'}
+
+# Plot predicted vs observed
+plot(d18O_cellulose~d18O_c,data=result,xlab='d18Oc Predicted',ylab='d18Oc Observed',las=1,pch=19,col='red')
+segments(0,0,100,100,lty=2)
+abline(lm(d18O_cellulose~d18O_c,data=result),col='red')
+
+```
+
+
 
 
 ## Leaf temperature model

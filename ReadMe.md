@@ -13,7 +13,7 @@ This package is under development and may yet produce unstable results
 Description
 -----------
 
-{isoplants} is a lightweight R package to model the isotopic ratios in in plant tissue and analyze the sensitivity to changes in environmental conditions. It currently focuses on stable Oxygen isotopes but will integrate Carbon and possibly Hydrogen isotopes in future releases. It uses the R package [tealeaves](https://CRAN.R-project.org/package=tealeaves) to integrate the calculation of leaf temperatures.
+`isoplants` is a lightweight R package to model the isotopic ratios in in plant tissue and analyze the sensitivity to changes in environmental conditions. It currently focuses on stable Oxygen isotopes but will integrate Carbon and possibly Hydrogen isotopes in future releases. It uses the R package [tealeaves](https://CRAN.R-project.org/package=tealeaves) to integrate the calculation of leaf temperatures.
 
 Get isoplants
 -------------
@@ -191,7 +191,47 @@ Optimize a set of parameters
 
 Quite often, a set of parameters need to be fitted to some training data in order to produce a operational model.{Isoplants} allows for very simple parameter optimization when measured data is available.
 
---- EXAMPLE WILL BE ADDED SHORTLY ---
+``` r
+
+# prepare dataset with some randomized sample data
+n<-40
+observed_data <- get_default_parameters(n)
+observed_data$Tair <- rnorm(n,20,4)
+observed_data$RH   <- rnorm(n,70,10)
+observed_data$Lm   <- 0.06  # The fitting procedure should produce something close to this value
+observed_data$px   <- 0.5   # The fitting procedure should produce something close to this value
+# create some 'measured' vaules are added to the data.frame as 'd18O_cellulose'
+# (ensure not to use a parameter name)
+noise<-(runif(n)-0.5)/10
+observed_data$d18O_cellulose <- plant18O_model(observed_data,output='d18O_c') + noise
+# Always ensure that there are no NA values in the observed values
+observed_data<-observed_data[!is.na(observed_data$d18O_cellulose),]
+
+
+# Fit the parameters "Lm" and "px" (this might take a while)
+parfit<-fit_plant18O(c("Lm","px"), observed_data, obsvalue = "d18O_cellulose", modvalue ="d18O_c")
+#> [1] "parameter: Lm  |   boundaries: 0.0001 <= Lm   >= 2.0000     | initial value: Lm = 0.0300"
+#> [1] "parameter: px  |   boundaries: 0.0000 <= px   >= 1.0000     | initial value: px = 0.4000"
+#> [1] "done"
+
+print (parfit$par)
+#>         Lm         px 
+#> 0.06016166 0.49962964
+# Run model on best parameters
+run_par<-get_run_parameters(observed_data,parfit$par)
+modelout<-plant18O_model(run_par)
+result<-cbind(observed_data,modelout)
+```
+
+``` r
+
+# Plot predicted vs observed
+plot(d18O_cellulose~d18O_c,data=result,xlab='d18Oc Predicted',ylab='d18Oc Observed',las=1,pch=19,col='red')
+segments(0,0,100,100,lty=2)
+abline(lm(d18O_cellulose~d18O_c,data=result),col='red')
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 Leaf temperature model
 ----------------------
@@ -227,7 +267,7 @@ lines(result_without_Tleaf$d18O_pt~df_parameter_without_Tleaf$gs,lty=2,lwd=2,col
 legend('bottomleft',lty=c(1,2),lwd=2,c('incl.leaf temperature effect','excl. leaf temperature effect'),col=c(col="#00AFBB","#FC4E07"),bty='n',cex=0.8)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-5-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-6-2.png" width="100%" />
 
 Piso.AI API interaction
 -----------------------
@@ -285,7 +325,7 @@ for (i in 1:length(rhs)){
 legend('bottomleft',as.character(rhs),col=col,lty=1,title = 'RH (%)',bty='n')
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 Sobol incices
 -------------
@@ -319,7 +359,7 @@ x <- sobol2007(model =plant18O_model, X1 = X1, X2 = X2, nboot = 1000, output = "
 ggplot(x)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ### Fixing some parameters
 
@@ -342,7 +382,7 @@ x <- sobol2007(model =plant18O_model, X1 = X1, X2 = X2, nboot = 1000, output = "
 ggplot(x)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ### Parmeter gradients
 
@@ -378,13 +418,13 @@ ss<-scan_sensitivity(X1,X2,fixpar,ts,scanpar,outpar="D18O_lw")
 plot_sensitivity(ss$ds,scanpar,'normalized first-order indices','D18O_lw',parcol = 1,legend = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 ``` r
 plot_sensitivity(ss$dt,scanpar,'normalized total indices','',parcol = 1,legend = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 Contributors
 ------------
