@@ -14,36 +14,36 @@
 #' \dontrun{
 #'  # Simple request for Piso.AI data of two locations and the full time span of Piso.AI
 #'  location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0))
-#'  pisoai_data <- get_pisoai_data(location)
+#'  pisoai_data <- pisoai_get_data(location)
 #'
 #'
 #'  # Request for Piso.AI data of two locations and specific timespan
 #'  location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0))
-#'  pisoai_data <- get_pisoai_data(location, years=c(1990,2000),months=c(4,6))
+#'  pisoai_data <- pisoai_get_data(location, years=c(1990,2000),months=c(4,6))
 #'
 #'  # Request for Piso.AI data of two locations individual years
 #'  location<-data.frame(site= c("TEST1","TEST2"),
 #'                       latitude=c(45.7,46.5),longitude=c(7.6,8.0),
 #'                       years=c(1979,2010))
-#'  pisoai_data <- get_pisoai_data(location)
+#'  pisoai_data <- pisoai_get_data(location)
 #'
 #'  # Similar request, additionally storing data locally
-#'  pisoai_data <- get_pisoai_data(location,storelocal='~/PisoAI_data')
+#'  pisoai_data <- pisoai_get_data(location,storelocal='~/PisoAI_data')
 #'  # read back local data
 #'  pisoai_data <- pisoai_readlocal('~/PisoAI_data')
 #' }
 
 pisoai_get_data<-function(location,years=c(1950,2019),months=c(1,12),storelocal=NA){
   i=0
-  if (is.data.frame(location) & length(intersect (c('site','latitude','longitude'), names(location))==3)){
+  if (is.data.frame(location) & length(intersect (c('site','latitude','longitude'), names(location)))==3){
     if (!'elevation' %in% names(location)) location$elevation<-NA
-    if (!'year' %in% names(location)) {
+    if ('year' %in% names(location)) {
       pisoai_data<-lapply(1:nrow(location),FUN = function (i) pisoai_request (
         location$site[i],location$latitude[i], location$longitude[i],location$elevation[i]),location$year[i],
         months,storelocal)
     } else {
       pisoai_data<-lapply(1:nrow(location),FUN = function (i) pisoai_request (
-        location$site[i],location$latitude[i], location$longitude[i],location$elevation[i],years,months),storelocal)
+        location$site[i],location$latitude[i], location$longitude[i],location$elevation[i],years,months,storelocal))
     }
     pisoai_data<-do.call("rbind",pisoai_data)
     return(pisoai_data)
@@ -74,6 +74,7 @@ pisoai_get_data<-function(location,years=c(1950,2019),months=c(1,12),storelocal=
 
 
 pisoai_request <- function(site,latitude,longitude,elevation=NA,years=c(1950,2019),months=c(1,12),storelocal=NA){
+  print(sprintf("downloading data for %s..."),site)
   request_url<-sprintf('https://isotope.bot.unibas.ch/PisoAI/api?site=%s&lat=%s&lon=%s&from=%s&to=%s',site,latitude,longitude,sprintf('%4g-%02g-01',min(years),min(months)),sprintf('%4g-%02g-31',max(years),max(months)))
   if (!is.na(elevation))  request_url<- sprintf("%s&elevation=%s", request_url,elevation)
   res<-httr::GET(request_url)
@@ -100,9 +101,18 @@ pisoai_request <- function(site,latitude,longitude,elevation=NA,years=c(1950,201
 
 #' load locally stored Piso_AI data downloaded with through this API
 #'
-#' @param path local path where the downlowdes Piso.AI csv files are stored
+#' @param path local path where the downloads Piso.AI csv files are stored
 #' @return data.frame with PISO.AI prediction for precipitation isotopic composition
 #' @export
+#' @examples
+#'
+#' # Load local or download if local is not available (no checks are performed testing if local data is complete)
+#' \dontrun{
+#'  PATH= getwd()
+#'  pisoai_data <- pisoai_readlocal(PATH)
+#'  if (is.null(pisoai_data)) pisoai_data <- pisoai_get_data(sites, years=c(1990,2018),storelocal=PATH)
+#' }
+#'
 pisoai_readlocal<-function(path){
   pisoai_data<-lapply (list.files(path,'pisoAI_.*.csv',full.names=TRUE), FUN = function (f) utils::read.csv(f,sep=',',skip=2,header=TRUE,stringsAsFactors = FALSE))
   pisoai_data<-do.call("rbind",pisoai_data)
