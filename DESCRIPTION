@@ -1,6 +1,6 @@
 Package: isoplants
 Title: Modelling stable isotope composition of plant tissue
-Version: 0.0.0.0001
+Version: 0.0.1
 Authors@R: 
     person(given = "David",
            family = "Basler",

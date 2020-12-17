@@ -32,21 +32,21 @@ data.frame with PISO.AI prediction for precipitation isotopic composition
 \dontrun{
  # Simple request for Piso.AI data of two locations and the full time span of Piso.AI
  location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0))
- pisoai_data <- get_pisoai_data(location)
+ pisoai_data <- pisoai_get_data(location)
 
 
  # Request for Piso.AI data of two locations and specific timespan
  location<-data.frame(site= c("TEST1","TEST2") ,latitude=c(45.7,46.5),longitude=c(7.6,8.0))
- pisoai_data <- get_pisoai_data(location, years=c(1990,2000),months=c(4,6))
+ pisoai_data <- pisoai_get_data(location, years=c(1990,2000),months=c(4,6))
 
  # Request for Piso.AI data of two locations individual years
  location<-data.frame(site= c("TEST1","TEST2"),
                       latitude=c(45.7,46.5),longitude=c(7.6,8.0),
                       years=c(1979,2010))
- pisoai_data <- get_pisoai_data(location)
+ pisoai_data <- pisoai_get_data(location)
 
  # Similar request, additionally storing data locally
- pisoai_data <- get_pisoai_data(location,storelocal='~/PisoAI_data')
+ pisoai_data <- pisoai_get_data(location,storelocal='~/PisoAI_data')
  # read back local data
  pisoai_data <- pisoai_readlocal('~/PisoAI_data')
 }
