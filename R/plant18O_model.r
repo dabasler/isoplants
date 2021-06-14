@@ -37,9 +37,9 @@
 #' \code{Lm} \tab Peclet-model scaled path length (m) \tab use Peclet-model\cr
 #' \tab or\cr
 #' \code{phi} \tab Two pool model mixing parameter \tab use Two pool-model\cr
-#' \code{px} \tab conversion parameter for cellulose\cr
-#' \code{pex} \tab conversion parameter for cellulose\cr
-#' \code{ewc} \tab conversion parameter for cellulose (assumed to be 27 permil)\cr
+#' \code{px} \tab Proportion of O exchanged during cellulose synthesis\cr
+#' \code{pex} \tab Proportion of unenriched xylem water in developing cell\cr
+#' \code{ewc} \tab Biosynthetic fracination during cellulose synthesis (assumed to be 27 permil)\cr
 #' \code{ecp} \tab offset from cellulose to bulk leaf material\cr
 #' \cr
 #' \bold{additional leaf temperature model \code{tealeaves} parameter}\cr
@@ -188,7 +188,8 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   d18O_lw <- D18O_lw + d18O_sw
   # Cellulose
 
-  if (!"ewc" %in% parameter_names) ewc<-27.0
+  if (!"ewc" %in% parameter_names) { ewc<-27.0 }
+  else  {ewc <- par["ewc"]}
 
   if (!"px" %in% parameter_names | !"pex" %in% parameter_names) {
     D18O_c <- valueNA
@@ -260,8 +261,8 @@ get_parameter_definition<-function(){
   parameter_definition[14,]<-c('leaf', 'phi',         0,   1,      0.6,  9,'[]','Two pool model mixing parameter')
 
   # Cellulose
-  parameter_definition[15,]<-c('leaf', 'px',          0,   1,      0.4, 10,'[]','conversion parameter for cellulose')
-  parameter_definition[16,]<-c('leaf', 'pex',         0,   1,        1, 11,'[]','conversion parameter for cellulose')
+  parameter_definition[15,]<-c('leaf', 'pex',          0,   1,      0.4, 10,'[]','Proportion of O exchanged during cellulose synthesis')
+  parameter_definition[16,]<-c('leaf', 'px',           0,   1,        1, 11,'[]','Proportion of unenriched xylem water in developing cell')
 
   # Bulk leaf material
   parameter_definition[17,]<-c('leaf', 'ecp',     -10,  10,        0, 12,'[permil]','offset from cellulose to bulk leaf material')
@@ -720,8 +721,8 @@ tealeaves_getValues<-function(isoplantspar,tealeaves_enviro_par=NULL,tealeaves_l
   tealeaves_enviro_par$T_air<-units::set_units(isoplantspar$Tair+273.15,'K')
   tealeaves_enviro_par$P<-units::set_units(isoplantspar$P,'kPa')
   tealeaves_enviro_par$RH<-units::set_units(isoplantspar$RH/100,'1')
-  if ("swrad" %in% names(isoplantspar)) tealeaves_enviro_par$S_sw <- units::set_units(isoplantspar$wind,'W/m^2')
-  if ("wind" %in% names(isoplantspar))  tealeaves_enviro_par$u <- units::set_units(isoplantspar$wind,'m/s')
+  if ("swrad" %in% names(isoplantspar)) tealeaves_enviro_par$S_sw <- units::set_units(isoplantspar$swrad,'W/m^2')
+  if ("wind" %in% names(isoplantspar))  tealeaves_enviro_par$wind <- units::set_units(isoplantspar$wind,'m/s')
   if ("leafsize" %in% names(isoplantspar)) tealeaves_leaf_par$leafsize <- units::set_units(isoplantspar$leafsize,'m')
   tealeaves_leaf_par$g_sw<-tealeaves::convert_conductance(units::set_units(isoplantspar$gs, "mol/m^2/s"),Temp = tealeaves_enviro_par$T_air, P = tealeaves_enviro_par$P)[[2]]
   t<-tealeaves::tleaf(tealeaves_leaf_par, tealeaves_enviro_par, tealeaves_constants, quiet = TRUE)[,1]
