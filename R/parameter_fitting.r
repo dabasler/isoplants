@@ -50,10 +50,12 @@ plant18O_rmse<-function(fitpar,fitparnames,constpar,obsvalue, modvalue ='d18O_c'
 ##@param control optinal customized set of control parameters for the selected optimization method
 #' @param pd optional parameter definition data.frame (pd <- get_parameter_definition()) with custom boundaries
 #' @param leaftemperture boolean. Calculate leaf temperature using the tealeaves model. Parameters 'swrad', 'wind' and 'leafsize must be provided'
+#' @param verbose boolean. Output some information while parameter fitting
+#'
 #' @return output from optimization routine including best fitting parameters
 #' @export
 
-fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c',  method = 'L-BFGS-B', pd=NULL, leaftemperture=FALSE) {
+fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c',  method = 'L-BFGS-B', pd=NULL, leaftemperture=FALSE, verbose =TRUE) {
   # Prepare initial parameters and limits
   if (is.null(pd)) pd<-get_parameter_definition()
   fitparlower     <- pd$lower  [pd$name %in% fitparnames]
@@ -67,7 +69,7 @@ fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c',  method 
     if (!sum(c("swrad","wind","leafsize") %in% names(data))==3)
       stop("leaftemperture=TRUE, but not all nescessary parameters are provided")
   }
-  for ( i in 1:length(fitparnames)) print(sprintf('parameter: %s  |   boundaries: %0.4f <= %s   >= %0.4f     | initial value: %s = %0.4f' , fitparnames[i], fitparlower[i],fitparnames[i],fitparupper[i], fitparnames[i],fitpardefault[i]))
+  if (verbose) for ( i in 1:length(fitparnames)) print(sprintf('parameter: %s  |   boundaries: %0.4f <= %s   >= %0.4f     | initial value: %s = %0.4f' , fitparnames[i], fitparlower[i],fitparnames[i],fitparupper[i], fitparnames[i],fitpardefault[i]))
   # Ensure values to be fitted are not in dataframe
   data<-data[,!names(data) %in% fitparnames]
   # optimization method
@@ -80,6 +82,6 @@ fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c',  method 
   } else {
     out<-stats::optim(par = fitpardefault, fn = plant18O_rmse, lower = fitparlower,  upper = fitparupper, method = method, constpar=data,fitparnames=fitparnames,obsvalue=obsvalue , modvalue = modvalue , leaftemperture = leaftemperture)
   }
-  print('done')
+  if (verbose) print('done')
   return (out)
 }

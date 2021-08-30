@@ -85,7 +85,7 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   if ("P" %in% parameter_names) {
     P <- par["P"]
   } else if ("elevation" %in% parameter_names) {
-    P <- get_pressure_at_elevation(par["elevation"])
+    P <- get_pressure_at_elevation(par["elevation"],par["Tair"])
     if (verbose) print("Calculating atmopheric pressure based on elevation")
   } else {
     stop("could not calculate atmopheric pressure: provide either P or elevation")
