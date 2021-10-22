@@ -267,7 +267,7 @@ get_parameter_definition<-function(){
   # Bulk leaf material
   parameter_definition[17,]<-c('leaf', 'ecp',     -10,  10,        0, 12,'[permil]','offset from cellulose to bulk leaf material')
 
-  # Additional Parameters for use with tealeaves leaf temperture model
+  # Additional Parameters for use with tealeaves leaf temperature model
   parameter_definition[ 18,]<-c('leafTmodel', 'swrad',   0,   2500,1000,  2,'[Wm^-2]','shortwave (solar) radiation')
   parameter_definition[ 19,]<-c('leafTmodel', 'wind',    0,   20,     2,  2,'[m/s]','windspeed')
   parameter_definition[ 20,]<-c('leafTmodel', 'leafsize',    0.001,   0.3, 0.1,  2,'[m]','leaf size (used for leaf temperature model)')
@@ -378,7 +378,7 @@ check_parameters <- function(par,parameter_check=NULL ) {
     if (length(ltpar)==1) {
       if (ltpar == "Tleaf"| ltpar == "Dleaf") tstring<- 'using provided leaf temperature'
     } else if (length(ltpar)>=3) {if ("swrad" %in% ltpar & "wind" %in% ltpar &  "leafsize" %in% ltpar) tstring<- 'using leaf temperature model (tealeaves)'}
-    else {  tstring<-'leaf temperture assumed to be equal to air temperture\n'}
+    else {  tstring<-'leaf temperature assumed to be equal to air temperature\n'}
   }
 
   # pargroup 9 specifies mixing model
@@ -397,7 +397,7 @@ check_parameters <- function(par,parameter_check=NULL ) {
   parameter_check<-parameter_check[,-which(names(parameter_check)=='pargroup')] # this column is for internal use only
   header=c(
     sprintf('Provided %i set(s) for %i parameters:\t %s\n',npc,np,paste(parnames,collapse = ', ')),
-    sprintf('Leaf temperture:\t %s\n',tstring),
+    sprintf('Leaf temperature:\t %s\n',tstring),
     sprintf('Mixing:\t %s\n',mixstring)
     )
     if (wvstring!='') header=c(header,sprintf('Other:\t %s\n',wvstring))
@@ -726,7 +726,9 @@ tealeaves_getValues<-function(isoplantspar,tealeaves_enviro_par=NULL,tealeaves_l
   if ("leafsize" %in% names(isoplantspar)) tealeaves_leaf_par$leafsize <- units::set_units(isoplantspar$leafsize,'m')
   tealeaves_leaf_par$g_sw<-tealeaves::convert_conductance(units::set_units(isoplantspar$gs, "mol/m^2/s"),Temp = tealeaves_enviro_par$T_air, P = tealeaves_enviro_par$P)[[2]]
   t<-tealeaves::tleaf(tealeaves_leaf_par, tealeaves_enviro_par, tealeaves_constants, quiet = TRUE)[,1]
-  gbw<-tealeaves::convert_conductance(tealeaves:::.get_gbw(t, "lower", c(tealeaves_constants, tealeaves_enviro_par, tealeaves_leaf_par), FALSE), Temp = tealeaves_enviro_par$T_air, P = tealeaves_enviro_par$P)[[3]]
+  gwb<-tealeaves:::.get_gbw(t, "lower", c(tealeaves_constants, tealeaves_enviro_par, tealeaves_leaf_par), FALSE)
+  gwb<-units::set_units(gwb,"m/s") # fix unit form m^2/m/s to m/s
+  gbw<-tealeaves::convert_conductance(gwb, Temp = tealeaves_enviro_par$T_air, P = tealeaves_enviro_par$P)[[3]]
   return(c(as.numeric(t)-273.15, 1/as.numeric(gbw)))
 }
 
