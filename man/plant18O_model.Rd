@@ -49,9 +49,9 @@ Calculates d18O of leaf water, cellulose and bulk tissue with different models b
 \code{Lm} \tab Peclet-model scaled path length (m) \tab use Peclet-model\cr
 \tab or\cr
 \code{phi} \tab Two pool model mixing parameter \tab use Two pool-model\cr
-\code{px} \tab conversion parameter for cellulose\cr
-\code{pex} \tab conversion parameter for cellulose\cr
-\code{ewc} \tab conversion parameter for cellulose (assumed to be 27 permil)\cr
+\code{px} \tab Proportion of O exchanged during cellulose synthesis\cr
+\code{pex} \tab Proportion of unenriched xylem water in developing cell\cr
+\code{ewc} \tab Biosynthetic fracination during cellulose synthesis (assumed to be 27 permil)\cr
 \code{ecp} \tab offset from cellulose to bulk leaf material\cr
 \cr
 \bold{additional leaf temperature model \code{tealeaves} parameter}\cr

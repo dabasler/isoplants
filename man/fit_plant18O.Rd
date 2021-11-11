@@ -10,7 +10,9 @@ fit_plant18O(
   obsvalue,
   modvalue = "d18O_c",
   method = "L-BFGS-B",
-  pd = NULL
+  pd = NULL,
+  leaftemperature = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -26,6 +28,10 @@ including a column of observation data}
 \item{method}{optimization methods. Supported methods are all methods in \code{optim} or 'GenSA' , which is more likely to find the glabal optimum in complex parameter space}
 
 \item{pd}{optional parameter definition data.frame (pd <- get_parameter_definition()) with custom boundaries}
+
+\item{leaftemperature}{boolean. Calculate leaf temperature using the tealeaves model. Parameters 'swrad', 'wind' and 'leafsize must be provided'}
+
+\item{verbose}{boolean. Output some information while parameter fitting}
 }
 \value{
 output from optimization routine including best fitting parameters

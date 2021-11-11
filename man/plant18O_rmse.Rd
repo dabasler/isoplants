@@ -4,7 +4,14 @@
 \alias{plant18O_rmse}
 \title{Calculate RMSE for parameter fitting with isoplants}
 \usage{
-plant18O_rmse(fitpar, fitparnames, constpar, obsvalue, modvalue = "d18O_c")
+plant18O_rmse(
+  fitpar,
+  fitparnames,
+  constpar,
+  obsvalue,
+  modvalue = "d18O_c",
+  leaftemperature = FALSE
+)
 }
 \arguments{
 \item{fitpar}{data.frame containing fitted values used to run the model}
@@ -16,6 +23,8 @@ plant18O_rmse(fitpar, fitparnames, constpar, obsvalue, modvalue = "d18O_c")
 \item{obsvalue}{name of the column in fixpar datafrme contoing the observation data}
 
 \item{modvalue}{name of the output variable to be tested againtst}
+
+\item{leaftemperature}{name of the output variable to be tested againtst}
 }
 \value{
 RMSE value
