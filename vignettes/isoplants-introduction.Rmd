@@ -28,7 +28,7 @@ This vignette shows a basic example to use the {isoplants} package:
 
 ## Minimum worked example
 
-You can use the models with the default parameter settings using the `get_default_parameters()` function and `plant18O_model()` or `plant2H_model()`. Basic information about the interpreters can be displayed by calling `get_parameter_definition()`.
+You can use the models with the default parameter settings using the `get_default_parameters()` function and `plant18O_model()` or `plant2H_model()`. Basic information about the interpreters can be displayed by calling `get_parameter_definition()`. The isotopologue of the parameter set can be specified using the `element` argument ( `H` for hydrogen, `O` for oxygen).
 
 
 ```{r, basic}
@@ -36,8 +36,8 @@ You can use the models with the default parameter settings using the `get_defaul
 library(magrittr)
 library(isoplants)
 
-# Get all default parameters (the default parameters will use include parameters for the Peclet model)
-df_parameter <- get_default_parameters() # for oxygen [default]
+# Get all default parameters (the default parameters will use include parameters for the Péclet model)
+df_parameter <- get_default_parameters() # for oxygen [default], use element='O' to specify oxygen explicitly
 result <- plant18O_model(df_parameter)
 result %>% knitr::kable()
 
@@ -170,7 +170,7 @@ The `isoplants` package is designed to work with the leaf temperature modelling 
 df_parameter<-get_default_parameters(tealeaves = TRUE) 
 
 # Set swrad to irradiance at 800 w/m2
-df_parameter$swrad<-800
+df_parameter$swrad<-300
 
 #set a range of values for stomatal conductance
 df_parameter<-set_parameters(data.frame(gs=seq(0.04,0.5,0.01)),df_parameter) 
@@ -189,7 +189,7 @@ result_without_Tleaf<-plant18O_model(df_parameter_without_Tleaf)
 ```{r, fig.show='hold'}
 
 plot(df_parameter$Tleaf~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='Leaf tempertaure (°C)',type='l')
-text(0.5,19.7,"Air temperature 20°C",adj=c(1,1),cex=0.8)
+legend("topright","Air temperature 20°C",cex=0.8,bty="n")
 
 plot(result_with_Tleaf$d18O_pt~df_parameter$gs,las=1,xlab='gs (mol m-2 s-1)',ylab='d18O plant tissue (‰)',type='l',lwd=2,col="#00AFBB")
 lines(result_without_Tleaf$d18O_pt~df_parameter_without_Tleaf$gs,lty=2,lwd=2,col="#FC4E07")

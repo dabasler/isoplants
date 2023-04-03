@@ -20,12 +20,12 @@ knitr::opts_chunk$set(
 ```
 
 The models in the {isoplants} package are include various environmental and leaf specific input parameters. The package includes functions to analyze the sensitivity to changes in the input variables
-This vignette shows some basic example to do some seinsitivity analysis with {isoplants}:
+This vignette shows some basic example to do some sensitivity analysis with {isoplants}:
 
 
 ## Direct sensitivity analysis
 
-For example, we can look at how d18O of cellulose is affected by differnt pex values under a set of differnet RH conditions. 
+For example, we can look at how d18O of cellulose is affected by different pex values under a set of different RH conditions. 
 
 ```{r sa}
 library(isoplants)
@@ -72,7 +72,7 @@ rnd_par <- data.frame(
   pdv    = c(    30,      10,  95, 102.0 ,       0,       0,   5,    0.5,     0.6 ,  0.8,  0.4),
   stringsAsFactors = FALSE
 )
-#Initialize two random parametersets
+#Initialize two random parameter sets
 n<-10000
 X1 <- get_randomized_parameters(n,rnd_par)
 X2 <- get_randomized_parameters(n,rnd_par)
@@ -86,7 +86,7 @@ ggplot(x)
 
 ### Fixing some parameters
 The `plant18O_model()` model allows to pass some parameters with the `addpar` argument. These will be internally joined with the main parameters, but allow for the exclusion of these parameters in certain kinds of analysis. 
-Here we analyze the sensitivity of d18O leafwater to changes in the input parameters (excluding variation in soil water, and the parameters for the steps after the calculation of leaf water).
+Here we analyze the sensitivity of d18O leaf water to changes in the input parameters (excluding variation in soil water, and the parameters for the steps after the calculation of leaf water).
 
 ```{r sobolfix}
 # Calculate Sobol indices with a set of fixed parameters (set to default values)

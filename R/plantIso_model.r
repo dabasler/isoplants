@@ -240,7 +240,7 @@ plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbos
 
   # Evaporative front
   De <- apply_craig_gordon_model(eq, ek, Dwv, ea, ei)
-  de <- De * (1 + dsw / 1000) + dsw
+  de <- D2delta(De,dsw)
 
   ## Mixing the evaporative front with leafwater
   if ("Lm" %in% parameter_names) {
@@ -254,7 +254,7 @@ plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbos
     phi <- par["phi"]
     if (verbose) print("two-pool model")
     pn <- NA
-    Dlw <- apply_twopool_mixing(phi, De) # we reuse the Lm parameter as phi
+    Dlw <- apply_twopool_mixing(phi, De)
   } else {
     if (verbose) message("Could not calculate leaf water mixing. Provide Lm for Peclet model or phi for two-pool model")
     pn <- NA
@@ -262,7 +262,7 @@ plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbos
   }
 
   # Leaf water
-  dlw =(Dlw + dsw)+(Dlw * dsw)/1000
+  dlw = D2delta(Dlw,dsw)
 
   # Cellulose
   if (element=="H"){
@@ -289,8 +289,6 @@ plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbos
     } else {
       px <- par["px"]
       pex <- par["pex"]
-      #D18O_c <- get_cellulose18O(pex, px, D18O_lw,ewc)
-      #d18O_c <- D2delta(D18O_c,d18O_sw)
       dc <- get_cellulose18O(dlw,dsw,px,pex,ewc)
     }
   }
@@ -733,12 +731,12 @@ get_H2O_diffusivity <- function(T,element="O") {
 #' @export
 ## ---- get_cellulose18O
 
-get_cellulose18O <- function(dlw,dsw, px, pex ,ewc = 27.0) { # [permil],[], []
-  # Same Formulation as for 2H, expet epsA and espH are ewc
+get_cellulose18O <- function(dlw,dsw, px, pex ,ewc = 27.0) { #[permil],[permil] [], [], [permil]
+  # Same Formulation as for 2H, except epsA and espH are both equal to ewc
   f<-pex
   epsA<-ewc
   epsH<-ewc
-  dc <- (1-f)*(dlw*(1+epsA/1000 )+epsA)+f*((px*dsw +(1-px)*dlw )*(1+epsH/1000 )+epsH)
+  dc <- (1-f)*(dlw*(1+epsA/1000 )+epsA)+f*((px*dsw +(1-px)*dlw )*(1+epsH/1000 )+epsH) # Full formulation including second order terms
   return(dc)
 }
 ## ----
@@ -757,7 +755,7 @@ get_cellulose18O <- function(dlw,dsw, px, pex ,ewc = 27.0) { # [permil],[], []
 ## ---- get_cellulose2H
 get_cellulose2H <- function(dlw, dsw, px, fH, epsA= -171 ,epsH= 158) { #[permil],[permil] [], [], [permil],[permil]
   f<-fH
-  dc<-(1-f)*(dlw*(1+epsA/1000 )+epsA)+f*((px*dsw +(1-px)*dlw )*(1+epsH/1000 )+epsH)
+  dc<-(1-f)*(dlw*(1+epsA/1000 )+epsA)+f*((px*dsw +(1-px)*dlw )*(1+epsH/1000 )+epsH)  # Full formulation including second order terms
   return(dc)
 }
 ## ----
