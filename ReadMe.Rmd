@@ -18,14 +18,14 @@ knitr::opts_chunk$set(
 # isoplants <img src="man/figures/isoplants_logo.png" align="right" height="200" width="200"/>
 
 
-## Modelling stable isotope composition of plant tissue
+## Modelling stable isotope composition of plant tissue (oxygen and hydrogen)
 
 ####*Note*
-This package is under development and may yet produce unstable results
+This package still is under development
 
 ## Description
 
-`isoplants` is a lightweight R package to model the isotopic ratios in in plant tissue and analyze the sensitivity to changes in environmental conditions. It currently focuses on stable Oxygen isotopes but will integrate Carbon and possibly Hydrogen isotopes in future  releases.
+`isoplants` is a lightweight R package to model the isotopic ratios in in plant tissue and analyze the sensitivity to changes in environmental conditions. It currently focuses on stable Oxygen and hydrogen isotopes but will likely also integrate Carbon isotopes in future  releases.
 It uses the R package [tealeaves](https://CRAN.R-project.org/package=tealeaves) to integrate the calculation of leaf temperatures.
 
 ## Get isoplants

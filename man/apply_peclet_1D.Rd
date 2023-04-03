@@ -4,10 +4,10 @@
 \alias{apply_peclet_1D}
 \title{1D Peclet mixing}
 \usage{
-apply_peclet_1D(D18O_e, pn)
+apply_peclet_1D(De, pn)
 }
 \arguments{
-\item{D18O_e}{d18O value at evaporative front}
+\item{De}{D18O or D2H value at evaporative front}
 
 \item{pn}{peclet number}
 }

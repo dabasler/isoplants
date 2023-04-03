@@ -12,7 +12,6 @@ get_run_parameters<-function(constpar,fitpar){
   return (constpar)
 }
 
-
 #' Calculate RMSE for parameter fitting with isoplants
 #'
 #' @param fitpar data.frame containing fitted values used to run the model
@@ -20,32 +19,50 @@ get_run_parameters<-function(constpar,fitpar){
 #' @param constpar static parmeters that are reruired to run the model but are not part of the fitting process
 #' @param obsvalue name of the column in fixpar datafrme contoing the observation data
 #' @param modvalue name of the output variable to be tested againtst
+#' @param element additional parameters, run for oxygen 'O' or hydrogen 'H'
 #' @param leaftemperature name of the output variable to be tested againtst
 #' @return RMSE value
 #' @export
 
-plant18O_rmse<-function(fitpar,fitparnames,constpar,obsvalue, modvalue ='d18O_c',leaftemperature=FALSE){
+plantIso_rmse<-function(fitpar,fitparnames,constpar,obsvalue, modvalue ='d18O_c',element="O",leaftemperature=FALSE){
   val<-constpar[,obsvalue] # Validation data
   names(fitpar)<-fitparnames
   runpar<-get_run_parameters(constpar,fitpar)
   if (leaftemperature){
     runpar<-calculate_Tleaf(runpar)
   }
-  out<-plant18O_model(runpar,output = modvalue)# model data
+  out<-plantIso_model(runpar,output = modvalue,element=element)# model data
   if (any(is.na(out))) {
     return(9999)}
   return(sqrt(mean((val - out) ^ 2, na.rm = T)))
 }
 
 
+#' Estimate parameters of the oxygen isotope model by optimization procedures
+#'
+#'A wrapper for `fit_plantIso()` to fit the oxygen isotope model. See `?fit_plantIso()` for detailed description of arguments.
+#' @export
+fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c', method = 'L-BFGS-B', pd=NULL, leaftemperature=FALSE, verbose =TRUE) {
+  fit_plantIso(fitparnames, data, obsvalue ,modvalue, element="O",  method, pd, leaftemperature, verbose)
+}
 
-#' Calculate RMSE for parameter fitting with isoplants
+#' Estimate parameters of the hydrogen isotope model by optimization procedures
+#'
+#'A wrapper for `fit_plantIso()` to fit the oxygen isotope model. See `?fit_plantIso()` for detailed description of arguments.
+#' @export
+fit_plant2H<-function(fitparnames, data, obsvalue ,modvalue ='d2H_c', method = 'L-BFGS-B', pd=NULL, leaftemperature=FALSE, verbose =TRUE) {
+  fit_plantIso(fitparnames, data, obsvalue ,modvalue, element="H",  method, pd, leaftemperature, verbose)
+}
+
+
+#' Estimate parameters of the isotope model by optimization prodecures
 #'
 #' @param fitparnames  vecort of value names to be fitted
 #' @param data data.frame of plant18O model parameters (except the ones to be fitted)
 #' including a column of observation data
 #' @param obsvalue name of the column in fixpar datafrme contoing the observation data
 #' @param modvalue name of the output variable to be tested againtst
+#' @param element additional parameters, run for oxygen 'O' or hydrogen 'H'
 #' @param method optimization methods. Supported methods are all methods in \code{optim} or 'GenSA' , which is more likely to find the glabal optimum in complex parameter space
 ##@param control optinal customized set of control parameters for the selected optimization method
 #' @param pd optional parameter definition data.frame (pd <- get_parameter_definition()) with custom boundaries
@@ -55,7 +72,7 @@ plant18O_rmse<-function(fitpar,fitparnames,constpar,obsvalue, modvalue ='d18O_c'
 #' @return output from optimization routine including best fitting parameters
 #' @export
 
-fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c',  method = 'L-BFGS-B', pd=NULL, leaftemperature=FALSE, verbose =TRUE) {
+fit_plantIso<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c', element="O",  method = 'L-BFGS-B', pd=NULL, leaftemperature=FALSE, verbose =TRUE) {
   # Prepare initial parameters and limits
   if (is.null(pd)) pd<-get_parameter_definition()
   fitparlower     <- pd$lower  [pd$name %in% fitparnames]
@@ -78,9 +95,9 @@ fit_plant18O<-function(fitparnames, data, obsvalue ,modvalue ='d18O_c',  method 
     tol        <- 1e-13
     #if (is.null(control))
     control <- list(threshold.stop=global.min+tol,verbose=TRUE,maxit=1000)
-    out<-GenSA::GenSA( par = fitpardefault, fn = plant18O_rmse, lower = fitparlower,  upper = fitparupper, control=control,constpar=data,fitparnames=fitparnames,obsvalue=obsvalue , modvalue = modvalue , leaftemperature = leaftemperature)
+    out<-GenSA::GenSA( par = fitpardefault, fn = plantIso_rmse, lower = fitparlower,  upper = fitparupper, control=control,constpar=data,fitparnames=fitparnames,obsvalue=obsvalue , modvalue = modvalue , leaftemperature = leaftemperature, element = element)
   } else {
-    out<-stats::optim(par = fitpardefault, fn = plant18O_rmse, lower = fitparlower,  upper = fitparupper, method = method, constpar=data,fitparnames=fitparnames,obsvalue=obsvalue , modvalue = modvalue , leaftemperature = leaftemperature)
+    out<-stats::optim(par = fitpardefault, fn = plantIso_rmse, lower = fitparlower,  upper = fitparupper, method = method, constpar=data,fitparnames=fitparnames,obsvalue=obsvalue , modvalue = modvalue , leaftemperature = leaftemperature, element = element)
   }
   if (verbose) print('done')
   return (out)

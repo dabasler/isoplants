@@ -2,7 +2,7 @@
 % Please edit documentation in R/sensitivity_analysis.r
 \name{plot_sensitivity}
 \alias{plot_sensitivity}
-\title{Plot the relative sensitivity of each facotr along a gradient.
+\title{Plot the relative sensitivity of each factor along a gradient.
 This function plots the output of scan_sensitivity()}
 \usage{
 plot_sensitivity(
@@ -19,20 +19,20 @@ plot_sensitivity(
 \arguments{
 \item{ds}{one of the objects in the list created by scan_sensitivity()}
 
-\item{xlab}{data.frame of randomized model parameters for the siensitvity analysis}
+\item{xlab}{data.frame of randomized model parameters for the sensitivity analysis}
 
-\item{ylab}{data.frame of randomized model parameters for the siensitvity analysis}
+\item{ylab}{data.frame of randomized model parameters for the sensitivity analysis}
 
-\item{main}{data.frame of randomized model parameters for the siensitvity analysis}
+\item{main}{data.frame of randomized model parameters for the sensitivity analysis}
 
-\item{fcolors}{colors for the different facotrs (default colors as defined in #http://colorbrewer2.org/#type=diverging&scheme=Spectral&n=6)}
+\item{fcolors}{colors for the different factors (default colors as defined in #http://colorbrewer2.org/#type=diverging&scheme=Spectral&n=6)}
 
 \item{parcol}{index of the gradient color, will be hold out from the plot (default=1)}
 
 \item{legend}{boolean. plot legend (default=FALSE)}
 }
 \description{
-Plot the relative sensitivity of each facotr along a gradient.
+Plot the relative sensitivity of each factor along a gradient.
 This function plots the output of scan_sensitivity()
 }
 \examples{

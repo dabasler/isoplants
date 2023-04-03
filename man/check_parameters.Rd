@@ -2,18 +2,20 @@
 % Please edit documentation in R/plant18O_model.r
 \name{check_parameters}
 \alias{check_parameters}
-\title{Check parameters for \emph{plant18O_model()}}
+\title{Check parameters for \emph{plant18O_model()} or \emph{plant2H_model()}}
 \usage{
-check_parameters(par, parameter_check = NULL)
+check_parameters(par, element = "O", parameter_check = NULL)
 }
 \arguments{
 \item{par}{a data.frame containting all required leaf18O parameter values}
 
+\item{element}{specify whether the check should be performed for oxygen 'O' of hydrogen 'H' parameters}
+
 \item{parameter_check}{defaults to get_parameter_definition(), but allows to set own valid parameter ranges}
 }
 \value{
-a list consiting of  1.) a general description of the tested parameters,
-2.) a dataframe including details of the parameter check and  3.) a list with indexes to parametersets that failed the check
+a list consisting of  1.) a general description of the tested parameters,
+2.) a data frame including details of the parameter check and  3.) a list with indexes to parameter sets that failed the check
 }
 \description{
 This function does some basic range checking for the provided parameters and informs about missing parameters to run the model

@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 ```
 
 The {isoplants} package allows to calculate isotopic composition of plant tissue in respone to environmental factors. 
-This vignette shows a basic example to usse the {isoplants} package:
+This vignette shows a basic example to use the {isoplants} package:
 
 - run a minimum worked example using default parameters
 - replace default parameters
@@ -28,7 +28,7 @@ This vignette shows a basic example to usse the {isoplants} package:
 
 ## Minimum worked example
 
-You can use the models with the default parameter settings using the `get_default_parameters()` function and `plant18O_model()`. Basic information about the inputparmeters can be displayed by calling `get_parameter_definition()`.
+You can use the models with the default parameter settings using the `get_default_parameters()` function and `plant18O_model()` or `plant2H_model()`. Basic information about the interpreters can be displayed by calling `get_parameter_definition()`.
 
 
 ```{r, basic}
@@ -36,13 +36,19 @@ You can use the models with the default parameter settings using the `get_defaul
 library(magrittr)
 library(isoplants)
 
-# Get all default parameters (the default parameters will use include parameters for the peclet model)
-df_parameter<-get_default_parameters()
-result<-plant18O_model(df_parameter)
+# Get all default parameters (the default parameters will use include parameters for the Peclet model)
+df_parameter <- get_default_parameters() # for oxygen [default]
+result <- plant18O_model(df_parameter)
 result %>% knitr::kable()
 
 # The output can also be limited to a specific variable
 plant18O_model(df_parameter,output = 'd18O_c')
+
+# Similarly, this can also be applied for the hydrogen model
+df_parameter <- get_default_parameters(element="H")
+result <- plant2H_model(df_parameter)
+result %>% knitr::kable()
+
 ```
 
 ## Parameter Checking
@@ -54,7 +60,7 @@ The package includes the `check_parameters()` function which provides
 
 
 ```{r, check}
-
+df_parameter <- get_default_parameters(element="O")
 check<-check_parameters(df_parameter) # Run a check on the specified parameters
 check$model_options %>% knitr::kable()
 check$model_parameters %>% knitr::kable()
@@ -72,7 +78,7 @@ RH<-seq(10,90,10)
 # PArameters can be set using the set_parameter function
 df_parameter<-get_default_parameters()
 df_parameter<-set_parameters(data.frame(RH),df_parameter)
-# OR by assigning them directly to a parametertable with the appropriate number of rows
+# OR by assigning them directly to a parameter table with the appropriate number of rows
 df_parameter<-get_default_parameters(n=length(RH), mode='peclet')
 df_parameter$RH<-RH
 #run model
@@ -90,7 +96,7 @@ The included fuction `get_randomized_parameters()` samples n parametersets from 
 # Get default parameters
 df_parameter<-get_default_parameters(mode='peclet')
 # Defines ranges and distributions for parameters (see ?get_randomized_parameters for detailed information on the imput format and further options)
-rnd_par <- data.frame(name= c('RH',   'd18O_sw', 'px'   ),
+rnd_par <- data.frame(name= c('RH',   'd18O_sw', 'pex'   ),
                       pdist=c('norm', 'norm'   , 'unif' ),
                       pdm=  c(70,      -10     , 0.4    ),
                       pdv=  c(20,       5      , 0.2    ),
@@ -122,7 +128,7 @@ observed_data <- get_default_parameters(n)
 observed_data$Tair <- rnorm(n,20,4)
 observed_data$RH   <- rnorm(n,70,10)
 observed_data$Lm   <- 0.06  # The fitting procedure should produce something close to this value
-observed_data$px   <- 0.5   # The fitting procedure should produce something close to this value
+observed_data$pex   <- 0.5   # The fitting procedure should produce something close to this value
 # create some 'measured' vaules are added to the data.frame as 'd18O_cellulose'
 # (ensure not to use a parameter name)
 noise<-(runif(n)-0.5)/10
@@ -132,7 +138,7 @@ observed_data<-observed_data[!is.na(observed_data$d18O_cellulose),]
 
 
 # Fit the parameters "Lm" and "px" (this might take a while)
-parfit<-fit_plant18O(c("Lm","px"), observed_data, obsvalue = "d18O_cellulose", modvalue ="d18O_c")
+parfit<-fit_plant18O(c("Lm","pex"), observed_data, obsvalue = "d18O_cellulose", modvalue ="d18O_c")
 
 print (parfit$par)
 # Run model on best parameters
@@ -163,6 +169,8 @@ The `isoplants` package is designed to work with the leaf temperature modelling 
 # Get a isoplants parameterset, including default values for radiation windspeed and leaf size
 df_parameter<-get_default_parameters(tealeaves = TRUE) 
 
+# Set swrad to irradiance at 800 w/m2
+df_parameter$swrad<-800
 
 #set a range of values for stomatal conductance
 df_parameter<-set_parameters(data.frame(gs=seq(0.04,0.5,0.01)),df_parameter) 
@@ -192,7 +200,7 @@ legend('bottomleft',lty=c(1,2),lwd=2,c('incl.leaf temperature effect','excl. lea
 
 ## Piso.AI API interaction
 
-One of the most important parameter for the isotopic compostition of plant tissue is the isotopic composition of source water (d18O_sw). Often this is approximated by using site-specific data on the isotopic composition of precipitation. THe {isoplants} packate interacts with the Piso.AI API to these data. [Piso.AI](https://isotope.bot.unibas.ch/PisoAI/) is tool for predicting monthly timeseries of oxygen and hydrogen isotope values of precipitation that uses a machine learning model trained on geographic and climate data. THe Piso.AI v1.0 dataset covers most of Europe and covers the timespan from 1950-01-01 to 2019-12-31. 
+One of the most important parameter for the isotopic composition of plant tissue is the isotopic composition of source water (d18O_sw). Often this is approximated by using site-specific data on the isotopic composition of precipitation. The {isoplants} package interacts with the Piso.AI API to these data. [Piso.AI](https://isotope.bot.unibas.ch/PisoAI/) is tool for predicting monthly time series of oxygen and hydrogen isotope values of precipitation that uses a machine learning model trained on geographic and climate data. The Piso.AI v1.0 data set covers most of Europe and covers the time span from 1950-01-01 to 2019-12-31. 
 Below is an example of the basic data requests from the Piso.AI api using the tools provided in {isoplants}:
 
 ```{r, Piso.AI, eval=FALSE}

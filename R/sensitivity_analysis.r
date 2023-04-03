@@ -3,14 +3,14 @@
 
 #' Sensitivity analysis by factor
 #' Calculates sobol indices along scanning one parameter
-#' @param X1 data.frame of randomized model parameters for the siensitvity analysis
-#' @param X2 data.frame of randomized model parameters for the siensitvity analysis
-#' @param fixpar one row data.frame with requiered parameters not to be varied in the sensitivity analysis
+#' @param X1 data.frame of randomized model parameters for the sensitivity analysis
+#' @param X2 data.frame of randomized model parameters for the sensitivity analysis
+#' @param fixpar one row data.frame with required parameters not to be varied in the sensitivity analysis
 #' @param scanvalues vector of values to be calculated for the gradient factor
 #' @param scanpar character. Name of the Gradient factor
 #' @param outpar name of the response variable (default "D18Olw")
 #'
-#' @return a list with two dataframes (1) the estimations of the Sobol' first-order indices (2) the estimations of the Sobol' total sensitivity indices.
+#' @return a list with two data frames (1) the estimations of the Sobol' first-order indices (2) the estimations of the Sobol' total sensitivity indices.
 #' @export
 #' @examples
 #'
@@ -18,15 +18,15 @@
 #' parameters = get_parameter_definition ()
 #' }
 
-##********************* test importance of parameters to changes in air temperure
+##********************* test importance of parameters to changes in air temperature
 
-scan_sensitivity<-function(X1,X2,fixpar,scanvalues,scanpar,outpar="D18O_lw"){
+scan_sensitivity<-function(X1,X2,fixpar,scanvalues,scanpar,outpar="D18O_lw",element="O"){
   X1<-X1[,!names(X1) %in% c(names (fixpar),scanpar)]
   X2<-X2[,!names(X2) %in% c(names (fixpar),scanpar)]
   for (i in scanvalues){
     print (i)
     fixpar[scanpar]    <- i
-    x <- sensitivity::sobol2007(model =plant18O_model, X1 = X1, X2 = X2, nboot = 1000, output = outpar,addpar=fixpar)
+    x <- sensitivity::sobol2007(model =plantIso_model, X1 = X1, X2 = X2, nboot = 1000, output = outpar,addpar=fixpar,element=element)
     if (i==scanvalues[1]){
       ds<-x$S$original
       dt<-x$T$original
@@ -46,13 +46,13 @@ scan_sensitivity<-function(X1,X2,fixpar,scanvalues,scanpar,outpar="D18O_lw"){
 
 
 
-#' Plot the relative sensitivity of each facotr along a gradient.
+#' Plot the relative sensitivity of each factor along a gradient.
 #' This function plots the output of scan_sensitivity()
 #' @param ds one of the objects in the list created by scan_sensitivity()
-#' @param xlab data.frame of randomized model parameters for the siensitvity analysis
-#' @param ylab data.frame of randomized model parameters for the siensitvity analysis
-#' @param main data.frame of randomized model parameters for the siensitvity analysis
-#' @param fcolors colors for the different facotrs (default colors as defined in #http://colorbrewer2.org/#type=diverging&scheme=Spectral&n=6)
+#' @param xlab data.frame of randomized model parameters for the sensitivity analysis
+#' @param ylab data.frame of randomized model parameters for the sensitivity analysis
+#' @param main data.frame of randomized model parameters for the sensitivity analysis
+#' @param fcolors colors for the different factors (default colors as defined in #http://colorbrewer2.org/#type=diverging&scheme=Spectral&n=6)
 #' @param parcol index of the gradient color, will be hold out from the plot (default=1)
 #' @param legend boolean. plot legend (default=FALSE)
 #' @importFrom  graphics plot polygon

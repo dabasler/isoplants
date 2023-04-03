@@ -4,14 +4,14 @@
 \alias{apply_craig_gordon_model}
 \title{Craig-Gordon model for evaporative isotope enrichment}
 \usage{
-apply_craig_gordon_model(eq, ek, D18O_wv, ea, ei)
+apply_craig_gordon_model(eq, ek, Dwv, ea, ei)
 }
 \arguments{
 \item{eq}{equilibrium fractination (permil)}
 
 \item{ek}{kinetic fractination (permil)}
 
-\item{D18O_wv}{Water vapor isotope signal over source water}
+\item{Dwv}{Water vapor isotope signal over source water (oxygen or hydrogen, depending on application)}
 
 \item{ea}{atmospheric water pressure}
 

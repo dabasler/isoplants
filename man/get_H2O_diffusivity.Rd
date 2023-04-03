@@ -2,18 +2,19 @@
 % Please edit documentation in R/plant18O_model.r
 \name{get_H2O_diffusivity}
 \alias{get_H2O_diffusivity}
-\title{Diffusivity h2(18O)}
+\title{Diffusivity}
 \usage{
-get_H2O_diffusivity(T)
+get_H2O_diffusivity(T, element = "O")
 }
 \arguments{
 \item{T}{Temperature in Celsius}
+
+\item{element}{specify whether it sould be calculated for oxygen 'O' of hyrdogen 'H'}
 }
 \value{
 diffusivity of heavy isotopologue  in water (H2 18O)
 }
 \description{
-Temperature (C) dependence of diffusivity of heavy isotopologue  in water (H2
-18O) (Cuntz et al. 2007)
-as described in review by Cernusak et al. 2016
+Temperature (C) dependence of diffusivity of heavy isotopologue in water (H2 and
+18O) (Cuntz et al. 2007) as described in review by Cernusak et al. 2016
 }

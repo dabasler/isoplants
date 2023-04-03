@@ -4,16 +4,18 @@
 \alias{get_cellulose18O}
 \title{Leaf water to cellulose 18O}
 \usage{
-get_cellulose18O(pex, px, D18O_lw, ewc = 27)
+get_cellulose18O(dlw, dsw, px, pex, ewc = 27)
 }
 \arguments{
-\item{pex}{exchange of leaf water signal in carbohydrates with local water before incorporation into the cellulose polymer}
-
 \item{px}{fraction of unenriched water in this water pool used for cellulose synthesis}
 
-\item{D18O_lw}{D180 of leaf water}
+\item{pex}{exchange of leaf water signal in carbohydrates with local water before incorporation into the cellulose polymer}
 
-\item{ewc}{Equilibrium fractionation between carbonyl oxygen and medium water (default 27 permil)}
+\item{ewc}{Equilibrium fractionation between carbonyloxygen and medium water (default 27 permil)}
+
+\item{d18O_lw}{d180 of leaf water}
+
+\item{d18O_sw}{d180 of source (xylem) water}
 }
 \value{
 Returns Oxygen isotope composition of cellulose (permil)

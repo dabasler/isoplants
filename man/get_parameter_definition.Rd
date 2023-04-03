@@ -5,7 +5,10 @@
 \title{Basic description of input parameters for the leaf18O-model
 This data.frame object returned by this function dataframe contains basic information about model inpiut parameters and is used for the check_parameters function}
 \usage{
-get_parameter_definition()
+get_parameter_definition(element = "O")
+}
+\arguments{
+\item{element}{additional parameters, run for oxygen 'O' or hydrogen 'H'}
 }
 \value{
 a dataframe containing vaild parameter names,  ranges, descriptors and default values

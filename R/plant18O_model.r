@@ -1,8 +1,8 @@
 
-# Péclet-modified Craig Gordon model
+# Péclet-modified Craig Gordon and cellulose model
 # This is a general implementation of the Peclet-modified Craig Gordon model, offering a bunch of different options
 
-#' (Péclet mofified) Craig-Gordon based model for plant tissue 18O enrichment
+#' (Péclet mofified) Craig-Gordon and cellulose model for calculation of plant tissue 18O enrichment
 #' Calculates d18O of leaf water, cellulose and bulk tissue with different models based on the parameter provided
 #' @param par a named vector or data.frame of parameter values (see details below)
 #' @param output vector of output selected output values or 'all' (default)
@@ -55,23 +55,101 @@
 #' \dontrun{
 #' result = plant18O_model(par)
 #' }
+plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE){ # Wrapper for backward compability
+  plantIso_model(par, addpar, element="O", output, verbose)
+}
 
-plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
+
+#' (Péclet mofified) Craig-Gordon and cellulose model for calculation of plant tissue 18O enrichment
+#' Calculates d18O of leaf water, cellulose and bulk tissue with different models based on the parameter provided
+#' @param par a named vector or data.frame of parameter values (see details below)
+#' @param output vector of output selected output values or 'all' (default)
+#' @param addpar additional parameters, that will my join internally with the main parameter list. To be used for fixed parameters for model fitting/sensitivity analysis
+#' @param verbose print messages while running
+#' @return a dataframe of calculated values (see details below)
+#' @keywords isotope, craig-gordon, leaf cellulose, leaf water
+#' @details
+#'
+#' \bold{Input parameters}\cr A data.frame with the following numeric columns:
+#'
+#'\tabular{llll}{
+#' \bold{Environment}\cr
+#' \code{Tair} \tab Air Temperature (C)\cr
+#' \code{RH} \tab Relative humidity (%)\cr
+#' \tab or\cr
+#' \code{ea} \tab atmospheric vapor pressure  (kPa) \cr
+#' \code{P} \tab barometric pressure (kPa) \cr
+#' \tab or\cr
+#' \code{elevation} \tab elevation (m) \tab calculate P(elevation)\cr
+#' \code{d18O_sw} \tab d18O soil water (permille)\cr
+#' \code{D18O_wv} \tab D18O of water vapor over soil water (permille) \tab optional, if not supplied water vapour is assubed to be in equilibrium with soil water\cr
+#' \cr
+#' \bold{Leaf}\cr
+#' \code{DTleaf} \tab delta leaf temperature (K)\cr
+#' \tab or\cr
+#' \code{Tleaf} \tab absolute leaf temperature \tab C\cr
+#' \code{rb} \tab boundary resistance (m^2 s mol^-1) \cr
+#' \code{gs} \tab stomatal conductance (mol m^-2 s^-1)\cr
+#' \tab or\cr
+#' \code{gsref} \tab ref. stomatal conductance @ 1kPa VPD (mol m^-2 s^-1) \tab calculate gs as gs(vpd)\cr
+#' \code{Lm} \tab Peclet-model scaled path length (m) \tab use Peclet-model\cr
+#' \tab or\cr
+#' \code{phi} \tab Two pool model mixing parameter \tab use Two pool-model\cr
+#' \code{px} \tab Proportion of O exchanged during cellulose synthesis\cr
+#' \code{fH} \tab Proportion of unenriched xylem water in developing cell\cr
+#' \code{epsA} \tab Biosynthetic isotopic fractionation between exchangeable H and medium water during autotrophic metabolism (assumed to be -171 permil)\cr
+#' \code{epsH} \tab Biosynthetic isotopic fractionation between exchangeable H and medium water during heterotrophic metabolism (assumed to be 158 permil)\cr
+#' \code{ecp} \tab offset from cellulose to bulk leaf material\cr
+#' \cr
+#' \bold{additional leaf temperature model \code{tealeaves} parameter}\cr
+#' \code{swrad} \tab shortwave radiation \tab (Wm^-2)\cr
+#' \code{wind} \tab windspeed  \tab (ms^-1)\cr
+#' \code{ls} \tab leaf size  \tab (m)\cr
+#'}
+#'
+#' @export
+#' @examples
+#'
+#' # The model returns the ....
+#' \dontrun{
+#' result = plant2H_model(par)
+#' }
+plant2H_model <- function(par, addpar=NULL, output = "all", verbose = FALSE){ # Wrapper for backward compability
+  plantIso_model(par, addpar, element="H", output, verbose)
+}
+
+#' (Péclet mofified) Craig-Gordon and based model for isotopic enrichment in plant tissue (18O and 2H)
+#' @param par a named vector or data.frame of parameter values (see details below)
+#' @param addpar additional parameters, that will my join internally with the main parameter list. To be used for fixed parameters for model fitting/sensitivity analysis
+#' @param element additional parameters, run for oxygen 'O' or hydrogen 'H'
+#' @param output vector of output selected output values or 'all' (default)
+#' @param verbose print messages while running
+#' @return a dataframe of calculated values (see details below)
+#' @keywords isotope, craig-gordon, leaf cellulose, leaf water
+#' @details
+#'
+#' Main code for the model, for detailed input parameter descriptions see ?plant18O_model() or ?plant2H_model() functions
+#'
+plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbose = FALSE) {
   # Define output names
-  header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c", "d18O_c","D18O_pt","d18O_pt")
+  if (element=="H"){
+      header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D2H_e", "d2H_e", "D2H_lw", "d2H_lw", "D2H_c", "d2H_c","D2H_pt","d2H_pt")
+      isotope<-"2H"
+  } else{
+      header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c", "d18O_c","D18O_pt","d18O_pt")
+      isotope<-"18O"
+  }
   if (!is.null(addpar)) par <- set_parameters(addpar,par) # Allows to have some fixed parameters (used for optimization, sensitivity analisys,...)
   #Parse parameter
   if (output=='?') return (header) # Get header
   parameter_names <- names(par)
   valueNA <- rep(NA, length(par[, 1]))
-
   # Check required parameters and set options
   ## METEO   ########################
   # Tair
   if ("Tair" %in% parameter_names) {
     Tair <- par["Tair"]
   } else {stop("Missing required parameter: Tair")}
-
   # ea
   if ("ea" %in% parameter_names) {
     ea <- par["ea"]
@@ -90,22 +168,22 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   } else {
     stop("could not calculate atmopheric pressure: provide either P or elevation")
   }
-
   ## ISOTOPES ########################
-
-  # d18O_sw
-  if ("d18O_sw" %in% parameter_names) {
-    d18O_sw <- par["d18O_sw"]
+  # d18O_sw /  d2H_sw
+  dsw_name<-sprintf("d%s_sw",isotope)
+  if (dsw_name %in% parameter_names) {
+    dsw <- par[dsw_name]
   } else {
-    stop("Missing parameter d18O_sw")
+    stop(sprintf("Missing parameter %s",dsw_name))
   }
-  # D18O_wv
-  if ("D18O_wv" %in% parameter_names) {
-    D18O_wv <- par["D18O_wv"]
+  # D18O_wv / # D2H_wv
+  Dwv_name<-sprintf("D%s_sw",isotope)
+  if (Dwv_name %in% parameter_names) {
+    Dwv <- par[Dwv_name]
   } else {
     #stop("Missing parameter D18O_wv")
-    if (verbose) print ("assuming equilibrium water vapour. D18O_wv = -eeq (tair)")
-    D18O_wv <- -get_equilibrium_fractionation(Tair)
+    if (verbose) message (sprintf("assuming equilibrium water vapour. %s = -eeq (tair)",Dwv_name))
+    Dwv <- -get_equilibrium_fractionation(Tair,element = element)
   }
 
   if ("Tleaf" %in% parameter_names) { #Use custom parametername for tealeaves calculated leaf temperature?
@@ -139,11 +217,11 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   if ("rb" %in% parameter_names) {
       rb <- par["rb"]
     } else {
-      stop("Missing parameter rb")
+      stop("Missing parameter rb (boundary layer resistance)")
     }
   ## Isotope Fractination
-  eq <- get_equilibrium_fractionation(Tleaf)
-  D <- get_H2O_diffusivity(Tleaf)
+  eq <- get_equilibrium_fractionation(Tleaf,element = element)
+  D  <- get_H2O_diffusivity(Tleaf,element = element)
 
   rs <- valueNA
   E  <- valueNA
@@ -161,61 +239,75 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
   E [vpd <= 0] <- 1E-16 # TO DO: What happens with transpiration in saturated air and how does this effect peclet mixing??
 
   # Evaporative front
-  D18O_e <- apply_craig_gordon_model(eq, ek, D18O_wv, ea, ei)
-  d18O_e <- D18O_e * (1 + d18O_sw / 1000) + d18O_sw
+  De <- apply_craig_gordon_model(eq, ek, Dwv, ea, ei)
+  de <- De * (1 + dsw / 1000) + dsw
 
   ## Mixing the evaporative front with leafwater
   if ("Lm" %in% parameter_names) {
     # PECLET MIXING
     Lm <- par["Lm"]
     if (verbose) print("Peclet mixing")
-
     pn <- get_peclet_number(Lm, E, D)
-    D18O_lw <- apply_peclet_1D(D18O_e, pn)
+    Dlw <- apply_peclet_1D(De, pn)
   } else if ("phi" %in% parameter_names) {
     # TWO POOL
     phi <- par["phi"]
     if (verbose) print("two-pool model")
     pn <- NA
-    D18O_lw <- apply_twopool_mixing(phi, D18O_e) # we reuse the Lm parameter as phi
+    Dlw <- apply_twopool_mixing(phi, De) # we reuse the Lm parameter as phi
   } else {
     if (verbose) message("Could not calculate leaf water mixing. Provide Lm for Peclet model or phi for two-pool model")
     pn <- NA
-    D18O_lw <- valueNA
+    Dlw <- valueNA
   }
 
   # Leaf water
-  d18O_lw <- D18O_lw + d18O_sw
+  dlw =(Dlw + dsw)+(Dlw * dsw)/1000
+
   # Cellulose
-
-  if (!"ewc" %in% parameter_names) { ewc<-27.0 }
-  else  {ewc <- par["ewc"]}
-
-  if (!"px" %in% parameter_names | !"pex" %in% parameter_names) {
-    D18O_c <- valueNA
-    d18O_c <- valueNA
-    if (verbose) message("cannot calculate d18O cellulose. Provide values for px and pex")
-  } else {
-    px <- par["px"]
-    pex <- par["pex"]
-    D18O_c <- get_cellulose18O(pex, px, D18O_lw,ewc)
-    d18O_c <- D2delta(D18O_c,d18O_sw)
+  if (element=="H"){
+    if (!"epsA" %in% parameter_names) { epsA <- -171.0 }
+    else  {epsA <- par["epsA"]}
+    if (!"epsH" %in% parameter_names) { epsH <- 158.0 }
+    else  {epsH <- par["epsH"]}
+    if (!"px" %in% parameter_names | !"fH" %in% parameter_names) {
+      Dc <- valueNA
+      dc <- valueNA
+      if (verbose) message("cannot calculate d2H cellulose. Provide values for px and fH")
+    } else {
+      px <- par["px"]
+      fH <- par["fH"]
+      dc <- get_cellulose2H(dlw,dsw,px,fH, epsA, epsH)
+    }
+  }else{ # Oxygen
+    if (!"ewc" %in% parameter_names) { ewc<-27.0 }
+    else  {ewc <- par["ewc"]}
+    if (!"px" %in% parameter_names | !"pex" %in% parameter_names) {
+      Dc <- valueNA
+      dc <- valueNA
+      if (verbose) message("cannot calculate d18O cellulose. Provide values for px and pex")
+    } else {
+      px <- par["px"]
+      pex <- par["pex"]
+      #D18O_c <- get_cellulose18O(pex, px, D18O_lw,ewc)
+      #d18O_c <- D2delta(D18O_c,d18O_sw)
+      dc <- get_cellulose18O(dlw,dsw,px,pex,ewc)
+    }
   }
-
+  Dc <- delta2D(dc,dsw)
   # Bulk Materials
   if (!"ecp" %in% parameter_names) {
-    D18O_pt <- valueNA
-    d18O_pt <- valueNA
-    if (verbose) message("Parameter ecp missing. Cannot calculate d18O bulk")
+    Dpt <- valueNA
+    dpt <- valueNA
+    if (verbose) message("Parameter ecp missing. Cannot calculate values for bulk tissue")
   } else {
     ecp <- par["ecp"]
-    D18O_pt <- D18O_c + ecp
-    d18O_pt <- D2delta(D18O_pt,d18O_sw)
+    Dpt <- Dc + ecp
+    dpt <- D2delta(Dpt,dsw)
   }
-
   # Prepare Output
-  header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c","d18O_c","D18O_pt","d18O_pt")
-  values <- data.frame(ea, ei, ea / ei, vpd, eq, ek, gs, E, D, pn, D18O_e, d18O_e, D18O_lw, d18O_lw, D18O_c, d18O_c,D18O_pt,d18O_pt)
+  #header <- c("ea", "ei", "ea_ei", "vpd", "eq", "ek", "gs", "E", "D", "pn", "D18O_e", "d18O_e", "D18O_lw", "d18O_lw", "D18O_c","d18O_c","D18O_pt","d18O_pt")
+  values <- data.frame(ea, ei, ea / ei, vpd, eq, ek, gs, E, D, pn, De, de, Dlw, dlw, Dc, dc,Dpt,dpt)
   names(values) <- header
   if (output == "all") {
     return(values)
@@ -224,8 +316,11 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
 }
 
 
+
+
 #' Basic description of input parameters for the leaf18O-model
 #' This data.frame object returned by this function dataframe contains basic information about model inpiut parameters and is used for the check_parameters function
+#' @param element additional parameters, run for oxygen 'O' or hydrogen 'H'
 #' @return a dataframe containing vaild parameter names,  ranges, descriptors and default values
 #' @keywords isotope, craig-gordon, leaf cellulose, leaf water, parameters
 #' @export
@@ -235,7 +330,7 @@ plant18O_model <- function(par, addpar=NULL, output = "all", verbose = FALSE) {
 #' parameters = get_parameter_definition ()
 #' }
 
-get_parameter_definition<-function(){
+get_parameter_definition<-function(element="O"){
   parameter_definition<-data.frame(group=NA,name=NA,lower=NA,upper=NA,default=NA,pargroup=NA,unit=NA,description=NA)
   # items with the same pargroup variable are options to be set by providing one or the other parameter
 
@@ -245,8 +340,10 @@ get_parameter_definition<-function(){
   parameter_definition[ 3,]<-c('environment', 'ea',        0.5,   5, 1.642629,  3,'[kPa]','atmospheric vapor pressure') # Default value calculated
   parameter_definition[ 4,]<-c('environment', 'P',         40, 110,  101.325,  4,'[kPa]','barometric pressure')
   parameter_definition[ 5,]<-c('environment', 'elevation', -50,8000,        0,  4,'[m]','elevation')
-  parameter_definition[ 6,]<-c('environment', 'd18O_sw',   -30,   0,      -20,  5,'[permil]','d18O soil water')
-  parameter_definition[ 7,]<-c('environment', 'D18O_wv',   -15,   0,-9.806829,  6,'[permil]','D18O of water vapor over soil water') # Default value calculated
+  if (element=="O") parameter_definition[ 6,]<-c('environment', 'd18O_sw',   -30,   0,      -20,  5,'[permil]','d18O soil water')
+  if (element=="O") parameter_definition[ 7,]<-c('environment', 'D18O_wv',   -15,   0,-9.793879,  6,'[permil]','D18O of water vapor over soil water') # Default value calculated
+  if (element=="H") parameter_definition[ 6,]<-c('environment', 'd2H_sw',   -120,   0,      -80,  5,'[permil]','d2H soil water')
+  if (element=="H") parameter_definition[ 7,]<-c('environment', 'D2H_wv',   -100,   0, -85.0313,  6,'[permil]','D2H of water vapor over soil water') # Default value calculated
 
 
   # Leaf
@@ -261,7 +358,8 @@ get_parameter_definition<-function(){
   parameter_definition[14,]<-c('leaf', 'phi',         0,   1,      0.6,  9,'[]','Two pool model mixing parameter')
 
   # Cellulose
-  parameter_definition[15,]<-c('leaf', 'pex',          0,   1,      0.4, 10,'[]','Proportion of O exchanged during cellulose synthesis')
+  if (element=="O") parameter_definition[15,]<-c('leaf', 'pex',          0,   1,      0.4, 10,'[]','Proportion of O exchanged during cellulose synthesis')
+  if (element=="H") parameter_definition[15,]<-c('leaf', 'fH',          0,   1,      0.4, 10,'[]','Proportion of H exchanged during cellulose synthesis')
   parameter_definition[16,]<-c('leaf', 'px',           0,   1,        1, 11,'[]','Proportion of unenriched xylem water in developing cell')
 
   # Bulk leaf material
@@ -281,32 +379,35 @@ get_parameter_definition<-function(){
 #' Get a set of default environment and leaf parameters
 #' @param n number of rows in the retuned data.frame
 #' @param mode 'peclet' (default) or 'twopool', specify the mixing model used
+#' @param element get parameters for oxygen 'O' or hydrogen 'H'
 #' @param tealeaves add default parameters for leaf temperature calculation with the tealeaves model
 #' @return a dataframe containing vaild parameter names,  ranges, descriptors and default values
 #' @export
 #'
-get_default_parameters<-function(n=1,mode='peclet',tealeaves=FALSE){
+get_default_parameters<-function(n=1,mode='peclet',element="O",tealeaves=FALSE){
   mix<- 13
   if (mode=='twopool') mix<- 14
-  pd <- get_parameter_definition()
   lt<-9
   if (tealeaves) lt<-c(18,19,20)
+  pd <- get_parameter_definition(element)
   dp <- data.frame(matrix(rep(pd$default[c(1,2,4,6,lt,10,11,mix,15,16,17)],n),nrow=n,byrow=TRUE))
   names(dp)<-pd$name[c(1,2,4,6,lt,10,11,mix,15,16,17)]
   attr(dp,'units')<-pd$unit[c(1,2,4,6,lt,10,11,mix,15,16,17)]
+  attr(dp,'element')<-element
   return (dp)
 }
 
 
-#' Check parameters for *plant18O_model()*
+#' Check parameters for *plant18O_model()* or *plant2H_model()*
 #'
 #'This function does some basic range checking for the provided parameters and informs about missing parameters to run the model
 #'correctly. It is intended to be used once before running the model with the parameter set.
 #'
 #' @param par a data.frame containting all required leaf18O parameter values
+#' @param element specify whether the check should be performed for oxygen 'O' of hydrogen 'H' parameters
 #' @param parameter_check defaults to get_parameter_definition(), but allows to set own valid parameter ranges
-#' @return a list consiting of  1.) a general description of the tested parameters,
-#'  2.) a dataframe including details of the parameter check and  3.) a list with indexes to parametersets that failed the check
+#' @return a list consisting of  1.) a general description of the tested parameters,
+#'  2.) a data frame including details of the parameter check and  3.) a list with indexes to parameter sets that failed the check
 #'
 #' @keywords isotope, craig-gordon, leaf cellulose, leaf water, parameter-check
 #' @export
@@ -316,21 +417,31 @@ get_default_parameters<-function(n=1,mode='peclet',tealeaves=FALSE){
 #' check = check_parameters(par)
 #' }
 
-check_parameters <- function(par,parameter_check=NULL ) {
+check_parameters <- function(par,element=NULL,parameter_check=NULL ) {
+  if (is.null(element)) { # Try to get the element from the provided parameters
+    if (sum(grepl("18O",names(par)))) element<-"O" else if (sum(grepl("2H",names(par)))) element<-"H" else stop("Please provide a valid argument for element ('O' or 'H')")
+  }
   #ALL POSSIBLE PARAMETERS (SOME ARE REDUNDAT)
-  if (is.null(parameter_check)) parameter_check<-get_parameter_definition()
+  if (is.null(parameter_check)) parameter_check<-get_parameter_definition(element)
   parnames<-names(par) # Get names of provided parameter table
 
   # Caluclate optional parmeter
   # pargroup 6 D18O_vp
-  wvstring=''
-  if (!('D18O_wv' %in% parnames) & ('Tair' %in% parnames)){
-    par$D18O_wv <- -get_equilibrium_fractionation(par$Tair)
-    wvstring<-'D18O of water vapor over soil water assumed to be in equilibrium'
+  if (element=="O"){
+    wvstring=''
+    if (!('D18O_wv' %in% parnames) & ('Tair' %in% parnames)){
+      par$D18O_wv <- -get_equilibrium_fractionation(par$Tair,"O")
+      wvstring<-'D18O of water vapor over soil water assumed to be in equilibrium'
+    }
+  }else{
+    wvstring=''
+    if (!('D2H_wv' %in% parnames) & ('Tair' %in% parnames)){
+      par$D2H_wv <- -get_equilibrium_fractionation(par$Tair,"H")
+      wvstring<-'D2H of water vapor over soil water assumed to be in equilibrium'
+    }
   }
-
   parnames<-names(par) # Get names of provided parameter table
-  parnames<-intersect(parnames,parameter_check$name) # dorp all non-parameters from provided parameter table
+  parnames<-intersect(parnames,parameter_check$name) # drop all non-parameters from provided parameter table
   par<-par[,names(par) %in% parnames]
   np  <- length(parnames)
   npc <-nrow(par)
@@ -364,7 +475,8 @@ check_parameters <- function(par,parameter_check=NULL ) {
     }
   }
 
-  if (length(wvstring)>0) parameter_check$type[which(parameter_check$name=='D18O_wv')]<-'calculated'
+  if (element=="O") if (length(wvstring)>0) parameter_check$type[which(parameter_check$name=='D18O_wv')]<-'calculated'
+  if (element=="H") if (length(wvstring)>0) parameter_check$type[which(parameter_check$name=='D2H_wv')]<-'calculated'
 
   ## CHECK IF ALL REQUIRED PARAMETERS ARE SET
   setpar<-unique(parameter_check$pargroup[!is.na(parameter_check$check)])
@@ -422,7 +534,7 @@ check_parameters <- function(par,parameter_check=NULL ) {
 #' @return a dataframe containing vaild parameter names,  ranges, descriptors and default values
 #' @export
 ## ---- get_pressure_at_elevation
-get_pressure_at_elevation <- function(elevation,Tair) { #[m]
+get_pressure_at_elevation <- function(elevation,Tair) { #[m],[deg Celsius]
   #atp <- 101.325 * exp(-1 * (elevation / 7990)) / 10 # [kPa]
   M<-0.02896 #[kg/mol] Molar mass of earth
   g<-9.807 # ms-2 gravitation
@@ -470,15 +582,15 @@ get_transpiration <- function(VPD, P, rs, rb) {
 #' Models the heavy isotope enchichment due to evaporation
 #' @param eq equilibrium fractination (permil)
 #' @param ek kinetic fractination (permil)
-#' @param D18O_wv Water vapor isotope signal over source water
+#' @param Dwv Water vapor isotope signal over source water (oxygen or hydrogen, depending on application)
 #' @param ea atmospheric water pressure
 #' @param ei leaf internal water pressure (assumed to be saturated)
 #' @return D18O at evaporative front over source water
 ## ---- craig_gordon_model
-apply_craig_gordon_model <- function(eq, ek, D18O_wv, ea, ei) {
+apply_craig_gordon_model <- function(eq, ek, Dwv, ea, ei) {
   eaei <- ea / ei
-  D18Oe <- ((1 + eq / 1000) * ((1 + ek / 1000) * (1 - eaei) + eaei * (1 + D18O_wv / 1000)) - 1) * 1000
-  return(D18Oe)
+  De <- ((1 + eq / 1000) * ((1 + ek / 1000) * (1 - eaei) + eaei * (1 + Dwv / 1000)) - 1) * 1000
+  return(De)
 }
 ## ----
 
@@ -488,15 +600,20 @@ apply_craig_gordon_model <- function(eq, ek, D18O_wv, ea, ei) {
 #' Temperature dependence of equilibrium fractinations see Majoube 1971.
 #' implemented as described in review by Cernusak et al. 2016
 #' @param Tleaf Leaf temperature in Celsius
+#' @param element specify whether it should be calculated for oxygen 'O' of hyrdogen 'H'
 #' @return equilibrium_fractionation in permil
 #' @references
 #'
 #' Cernusak, L.A., Barbour, M.M., Arndt, S.K., Cheesman, A.W., English, N.B., Feild, T.S., Helliker, B.R., Holloway-Phillips, M.M., Holtum, J.A., Kahmen, A. and McInerney, F.A., 2016. Stable isotopes in leaf water of terrestrial plants. Plant, Cell & Environment, 39(5), pp.1087-1102.
 #' @export
 ## ---- get_equilibrium_fractionation
-get_equilibrium_fractionation <- function(Tleaf) { #[C]
-  T <- Tleaf + 273
-  es <- (exp((1.137 / T^2) * 10^3 - (0.4156 / T) -2.0667 * 10^(-3)) - 1) * 1000 # [per mil]
+get_equilibrium_fractionation <- function(Tleaf, element="O") { #[C]
+  T <- Tleaf + 273.15
+  if (element=="H"){
+    es <- (exp((24.844 / T^2) * 10^3 - (76.248 / T) + 52.612 * 10^(-3)) - 1) * 1000 # [per mil] for Hydrogen
+  } else{
+    es <- (exp((1.137 / T^2) * 10^3 - (0.4156 / T) -2.0667 * 10^(-3)) - 1) * 1000 # [per mil] for Oxygen
+  }
   return(es)
 }
 ## ----
@@ -513,14 +630,19 @@ get_equilibrium_fractionation <- function(Tleaf) { #[C]
 #' ek<-(32 x rs+21 x rb)/(rs+rb) #as described in paper by Song 2013
 #' @param rs stomatal resistance
 #' @param rb boundary layer resistance
+#' @param element specify whether it sould be calculated for oxygen 'O' of hyrdogen 'H'
 #' @return kinetic_fractionation in permil
 #' @references
 #'
 #' Cernusak, L.A., Barbour, M.M., Arndt, S.K., Cheesman, A.W., English, N.B., Feild, T.S., Helliker, B.R., Holloway-Phillips, M.M., Holtum, J.A., Kahmen, A. and McInerney, F.A., 2016. Stable isotopes in leaf water of terrestrial plants. Plant, Cell & Environment, 39(5), pp.1087-1102.
 #' @export
 ## ---- get_kinetic_fractionation
-get_kinetic_fractionation <- function(rs, rb) { # [m^2s mol^-1]
-  ek <- (28 * rs + 19 * rb) / (rs + rb) # [per mil]
+get_kinetic_fractionation <- function(rs, rb,element="O") { # [m^2s mol^-1]
+  if (element=="H"){
+    ek <- (25 * rs + 17 * rb) / (rs + rb) # [per mil] for Hydrogen
+  } else{
+    ek <- (28 * rs + 19 * rb) / (rs + rb) # [per mil] for Oxygen
+  }
   return(ek)
 }
 ## ----
@@ -560,37 +682,40 @@ get_peclet_number <- function(Lm, E, D) { #[m],[mol m-2 s-1],[]
 #' 1D Peclet mixing
 #'
 #' reduces the d18O at evaporative front based on the peclet value (Farquhar & Lloyd 1993)
-#' @param D18O_e d18O value at evaporative front
+#' @param De D18O or D2H value at evaporative front
 #' @param pn  peclet number
 #' @return D18O of total leaf water from d18O value at evaporative front
 #' @export
 ## ---- apply_peclet_1D
-apply_peclet_1D <- function(D18O_e, pn) {  #[permil],[]
-  D18Olw <- (D18O_e * (1 - exp(-pn))) / pn #[permil]
-  return(D18Olw)
+apply_peclet_1D <- function(De, pn) {  #[permil],[]
+  Dlw <- (De * (1 - exp(-pn))) / pn #[permil]
+  return(Dlw)
 }
 ## ----
 
 
-#' Diffusivity h2(18O)
+#' Diffusivity
 #'
-#' Temperature (C) dependence of diffusivity of heavy isotopologue  in water (H2
-#' 18O) (Cuntz et al. 2007)
-#' as described in review by Cernusak et al. 2016
+#' Temperature (C) dependence of diffusivity of heavy isotopologue in water (H2 and
+#' 18O) (Cuntz et al. 2007) as described in review by Cernusak et al. 2016
 #'
 #' @param T Temperature in Celsius
+#' @param element specify whether it sould be calculated for oxygen 'O' of hyrdogen 'H'
 #' @return diffusivity of heavy isotopologue  in water (H2 18O)
 #' @export
 ## ---- get_H2O_diffusivity
-get_H2O_diffusivity <- function(T) { #[C]
-  D <- (97.5 * 10^-9) * exp(-577 / (T + 128)) # [m^2 s^-1]
+get_H2O_diffusivity <- function(T,element="O") {
+  if (element=="H"){ # Hydrogen
+    D <- (98.5 * 10^-9) * exp(-577 / (T + 128)) # [m^2 s^-1]
+  }else{ # Oxygen
+    D <- (97.5 * 10^-9) * exp(-577 / (T + 128)) # [m^2 s^-1]}
+  }
   return(D)
 }
+
 ## ----
 # D<- (97.5*10^-8)*exp(-577/(T+128))  #[m^2 s^-1] [Typo corrected version suggested by Keel 2016]
 # D<- 119*10^-9*exp(-637/(136.15+T))  #[m^2 s^-1] [as described in paper by Song 2013]
-
-
 # get_cellulose18O <- function(pex, px, d18O_sw, d18O_lw) { # [], [], [permil], [permil]
 #   ewc <- 27.0 # [permil] fractination between source water and primary products of photosyntesis
 #   d18Oc <- pex * px * (d18O_sw + ewc) + (1 - pex * px) * (d18O_lw + ewc) # [permil]
@@ -599,17 +724,41 @@ get_H2O_diffusivity <- function(T) { #[C]
 
 #' Leaf water to cellulose 18O
 #'
-#' @param pex exchange of leaf water signal in carbohydrates with local water before incorporation into the cellulose polymer
+#' @param d18O_lw  d180 of leaf water
+#' @param d18O_sw  d180 of source (xylem) water
 #' @param px fraction of unenriched water in this water pool used for cellulose synthesis
-#' @param D18O_lw  D180 of leaf water
-#' @param ewc  Equilibrium fractionation between carbonyl oxygen and medium water (default 27 permil)
+#' @param pex exchange of leaf water signal in carbohydrates with local water before incorporation into the cellulose polymer
+#' @param ewc  Equilibrium fractionation between carbonyloxygen and medium water (default 27 permil)
 #' @return Returns Oxygen isotope composition of cellulose (permil)
 #' @export
 ## ---- get_cellulose18O
-get_cellulose18O <- function(pex, px,D18O_lw,ewc=27.0) { # [], [], [permil]
-   # [permil] fractination between source water and primary products of photosyntesis
-  D18O_c <-  D18O_lw * (1 - pex * px) +  ewc # [permil]
-  return(D18O_c)
+
+get_cellulose18O <- function(dlw,dsw, px, pex ,ewc = 27.0) { # [permil],[], []
+  # Same Formulation as for 2H, expet epsA and espH are ewc
+  f<-pex
+  epsA<-ewc
+  epsH<-ewc
+  dc <- (1-f)*(dlw*(1+epsA/1000 )+epsA)+f*((px*dsw +(1-px)*dlw )*(1+epsH/1000 )+epsH)
+  return(dc)
+}
+## ----
+
+
+#' Leaf water to cellulose 2HO
+#'
+#' @param d2H_lw  d2H of leaf water
+#' @param d2H_sw  d2H of source (xylem) water
+#' @param px fraction of unenriched water in this water pool used for cellulose synthesis
+#' @param fH Proportion of H exchange during heterotrophic reactions
+#' @param epsA Biosynthetic fractionation between exchangeable H and medium water during autotrophic metabolism
+#' @param epsB  Biosynthetic fractionation between exchangeable H and medium water during heterotrophic metabolism
+#' @return Returns Hydrogen isotope composition of cellulose (permil)
+#' @export
+## ---- get_cellulose2H
+get_cellulose2H <- function(dlw, dsw, px, fH, epsA= -171 ,epsH= 158) { #[permil],[permil] [], [], [permil],[permil]
+  f<-fH
+  dc<-(1-f)*(dlw*(1+epsA/1000 )+epsA)+f*((px*dsw +(1-px)*dlw )*(1+epsH/1000 )+epsH)
+  return(dc)
 }
 ## ----
 
@@ -628,21 +777,32 @@ get_pathlength <- function(E) { #[mol m-2 s-1]
 ## ----
 
 
-#' Two pool mixing
-#' two pool model phi is the proportion of unenriched water
-#' @param phi mixing coefficient
-#' @param D18O_e D18O of water at the evaporative front
-#' @return D18O of total leaf water from d18O value at evaporative front
+#' Equilibrium fractionation between carbonyl oxygen and medium water
+#'
+#' calculate ewc after by Sternberg & Ellsworth (2011)
+#' @param Tleaf Leaf temperature
+#' @return ewc value in permil
 #' @export
-## ---- apply_twopool_mixing
-apply_twopool_mixing <- function(phi, D18O_e) { #[], [permil]
-  D18O_lw <- (1 - phi) * D18O_e # [permil]
-  return(D18O_lw)
+## ---- get_ewc
+get_ewc <- function(Tleaf) { #[mol m-2 s-1]
+  ewc=0.0084*(Tleaf^2)-0.51*Tleaf+33.172
+  return(ewc)
 }
 ## ----
 
 
-
+#' Two pool mixing
+#' two pool model phi is the proportion of unenriched water
+#' @param phi mixing coefficient
+#' @param De D18O or D2H of water at the evaporative front
+#' @return D18O or D2H of total leaf water from d18O value at evaporative front
+#' @export
+## ---- apply_twopool_mixing
+apply_twopool_mixing <- function(phi, De) { #[], [permil]
+  Dlw <- (1 - phi) * De # [permil]
+  return(Dlw)
+}
+## ----
 
 #' sample parameters from specified distribution for leaf18O model
 #'

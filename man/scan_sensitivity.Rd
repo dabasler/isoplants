@@ -5,14 +5,22 @@
 \title{Sensitivity analysis by factor
 Calculates sobol indices along scanning one parameter}
 \usage{
-scan_sensitivity(X1, X2, fixpar, scanvalues, scanpar, outpar = "D18O_lw")
+scan_sensitivity(
+  X1,
+  X2,
+  fixpar,
+  scanvalues,
+  scanpar,
+  outpar = "D18O_lw",
+  element = "O"
+)
 }
 \arguments{
-\item{X1}{data.frame of randomized model parameters for the siensitvity analysis}
+\item{X1}{data.frame of randomized model parameters for the sensitivity analysis}
 
-\item{X2}{data.frame of randomized model parameters for the siensitvity analysis}
+\item{X2}{data.frame of randomized model parameters for the sensitivity analysis}
 
-\item{fixpar}{one row data.frame with requiered parameters not to be varied in the sensitivity analysis}
+\item{fixpar}{one row data.frame with required parameters not to be varied in the sensitivity analysis}
 
 \item{scanvalues}{vector of values to be calculated for the gradient factor}
 
@@ -21,7 +29,7 @@ scan_sensitivity(X1, X2, fixpar, scanvalues, scanpar, outpar = "D18O_lw")
 \item{outpar}{name of the response variable (default "D18Olw")}
 }
 \value{
-a list with two dataframes (1) the estimations of the Sobol' first-order indices (2) the estimations of the Sobol' total sensitivity indices.
+a list with two data frames (1) the estimations of the Sobol' first-order indices (2) the estimations of the Sobol' total sensitivity indices.
 }
 \description{
 Sensitivity analysis by factor

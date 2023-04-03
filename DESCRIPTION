@@ -1,18 +1,18 @@
 Package: isoplants
 Title: Modelling stable isotope composition of plant tissue
-Version: 0.0.1.7
+Version: 0.0.1.8
 Authors@R: 
     person(given = "David",
            family = "Basler",
            role = c("aut", "cre"),
            email = "david.j.basler@gmail.com",
            comment = c(ORCID = "0000-0002-4068-8319"))
-Description: Provides an R modelling framework for stable isotope composition of plant tissue.
+Description: Provides an R modelling framework for stable oxygen and hyrdogen isotope composition of plant tissue.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Depends: R (>= 3.5.0)
 Imports: sensitivity (>= 1.18.0),
          magrittr (>= 1.5.0),

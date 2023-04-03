@@ -5,15 +5,15 @@
 \title{Two pool mixing
 two pool model phi is the proportion of unenriched water}
 \usage{
-apply_twopool_mixing(phi, D18O_e)
+apply_twopool_mixing(phi, De)
 }
 \arguments{
 \item{phi}{mixing coefficient}
 
-\item{D18O_e}{D18O of water at the evaporative front}
+\item{De}{D18O or D2H of water at the evaporative front}
 }
 \value{
-D18O of total leaf water from d18O value at evaporative front
+D18O or D2H of total leaf water from d18O value at evaporative front
 }
 \description{
 Two pool mixing

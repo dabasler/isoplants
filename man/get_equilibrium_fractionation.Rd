@@ -4,10 +4,12 @@
 \alias{get_equilibrium_fractionation}
 \title{Equilibrium fractionation}
 \usage{
-get_equilibrium_fractionation(Tleaf)
+get_equilibrium_fractionation(Tleaf, element = "O")
 }
 \arguments{
 \item{Tleaf}{Leaf temperature in Celsius}
+
+\item{element}{specify whether it should be calculated for oxygen 'O' of hyrdogen 'H'}
 }
 \value{
 equilibrium_fractionation in permil

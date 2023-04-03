@@ -4,12 +4,14 @@
 \alias{get_kinetic_fractionation}
 \title{Kinetic fractionation}
 \usage{
-get_kinetic_fractionation(rs, rb)
+get_kinetic_fractionation(rs, rb, element = "O")
 }
 \arguments{
 \item{rs}{stomatal resistance}
 
 \item{rb}{boundary layer resistance}
+
+\item{element}{specify whether it sould be calculated for oxygen 'O' of hyrdogen 'H'}
 }
 \value{
 kinetic_fractionation in permil
