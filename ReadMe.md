@@ -220,7 +220,7 @@ parfit<-fit_plant18O(c("Lm","pex"), observed_data, obsvalue = "d18O_cellulose", 
 
 print (parfit$par)
 #>         Lm        pex 
-#> 0.05900343 0.50410597
+#> 0.06009428 0.49929524
 # Run model on best parameters
 run_par<-get_run_parameters(observed_data,parfit$par)
 modelout<-plant18O_model(run_par)
@@ -481,3 +481,9 @@ plot_sensitivity(ss$dt,scanpar,'normalized total indices','',parcol = 1,legend =
 <!-- * Get citation information for `isoplants` in R doing `citation(package = 'isoplants')` 
 * Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
 -->
+
+## Acknowledgements
+
+This project has received funding from the European Research Council
+(ERC) to Ansgar Kahmen under the European Union’s Horizon 2020 research
+and innovation programme (grant agreement No 724750).

@@ -75,3 +75,7 @@ library("isoplants")
 <!-- * Get citation information for `isoplants` in R doing `citation(package = 'isoplants')` 
 * Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
 -->
+
+## Acknowledgements
+
+This project has received funding from the European Research Council (ERC) to Ansgar Kahmen under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 724750).
