@@ -183,7 +183,8 @@ plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbos
   } else {
     #stop("Missing parameter D18O_wv")
     if (verbose) message (sprintf("assuming equilibrium water vapour. %s = -eeq (tair)",Dwv_name))
-    Dwv <- -get_equilibrium_fractionation(Tair,element = element)
+    #Dwv <- -get_equilibrium_fractionation(Tair,element = element)
+    Dwv <- delta2D(0,get_equilibrium_fractionation(Tair,element = element))
   }
 
   if ("Tleaf" %in% parameter_names) { #Use custom parametername for tealeaves calculated leaf temperature?
@@ -428,13 +429,15 @@ check_parameters <- function(par,element=NULL,parameter_check=NULL ) {
   if (element=="O"){
     wvstring=''
     if (!('D18O_wv' %in% parnames) & ('Tair' %in% parnames)){
-      par$D18O_wv <- -get_equilibrium_fractionation(par$Tair,"O")
+      #par$D18O_wv <- -get_equilibrium_fractionation(par$Tair,"O")
+      par$D18O_wv <- delta2D(0,get_equilibrium_fractionation(par$Tair,"O"))
       wvstring<-'D18O of water vapor over soil water assumed to be in equilibrium'
     }
   }else{
     wvstring=''
     if (!('D2H_wv' %in% parnames) & ('Tair' %in% parnames)){
-      par$D2H_wv <- -get_equilibrium_fractionation(par$Tair,"H")
+      #par$D2H_wv <- -get_equilibrium_fractionation(par$Tair,"H")
+      par$D2H_wv  <- delta2D(0,get_equilibrium_fractionation(par$Tair,"H"))
       wvstring<-'D2H of water vapor over soil water assumed to be in equilibrium'
     }
   }
