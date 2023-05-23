@@ -127,7 +127,7 @@ plant2H_model <- function(par, addpar=NULL, output = "all", verbose = FALSE){ # 
 #' @return a dataframe of calculated values (see details below)
 #' @keywords isotope, craig-gordon, leaf cellulose, leaf water
 #' @details
-#'
+#' @export
 #' Main code for the model, for detailed input parameter descriptions see ?plant18O_model() or ?plant2H_model() functions
 #'
 plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbose = FALSE) {
