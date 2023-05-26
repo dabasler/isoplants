@@ -230,7 +230,7 @@ plantIso_model <- function(par, addpar=NULL, element="O", output = "all", verbos
 
   # VPD > 0, we have transpiration
   rs[vpd > 0] <- 1 / gs[vpd > 0]
-  ek[vpd > 0] <- get_kinetic_fractionation(rs[vpd > 0], rb[vpd > 0])
+  ek[vpd > 0] <- get_kinetic_fractionation(rs[vpd > 0], rb[vpd > 0],element = element)
   E [vpd > 0] <- get_transpiration(vpd[vpd > 0], P[vpd > 0], rs[vpd > 0], rb[vpd > 0])
   # if vpd<=0
   ea[vpd <= 0] <- 1
